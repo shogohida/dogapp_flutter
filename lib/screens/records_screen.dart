@@ -1,0 +1,236 @@
+import 'package:flutter/material.dart';
+import '../data/dogs_repository.dart';
+import '../models/dog.dart';
+import '../theme/app_theme.dart';
+
+class RecordsScreen extends StatelessWidget {
+  final List<Dog> dogs;
+  final DogsRepository repository;
+
+  const RecordsScreen({super.key, required this.dogs, required this.repository});
+
+  List<({HealthRecord record, Dog dog})> get _allRecords {
+    final combined = <({HealthRecord record, Dog dog})>[];
+    for (final dog in dogs) {
+      for (final r in dog.records) {
+        combined.add((record: r, dog: dog));
+      }
+    }
+    combined.sort((a, b) => b.record.date.compareTo(a.record.date));
+    return combined;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
+      children: [
+        const Text('記録', style: AppText.display),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: dogs.isEmpty ? null : () => _showAddRecordSheet(context, dogs, repository),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.ink,
+              foregroundColor: Colors.white,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text('記録を追加', style: TextStyle(fontSize: 13)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        ..._allRecords.map((item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: item.dog.accent.withValues(alpha: 0.13),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(item.record.type.icon, size: 16, color: item.dog.accent),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.record.label, style: AppText.body, overflow: TextOverflow.ellipsis),
+                          Text(item.dog.name, style: AppText.caption),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '${item.record.date.month}/${item.record.date.day}',
+                      style: AppText.monoCaption,
+                    ),
+                  ],
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+}
+
+void _showAddRecordSheet(BuildContext context, List<Dog> dogs, DogsRepository repository) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.paper,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => _AddRecordSheet(dogs: dogs, repository: repository),
+  );
+}
+
+class _AddRecordSheet extends StatefulWidget {
+  final List<Dog> dogs;
+  final DogsRepository repository;
+
+  const _AddRecordSheet({required this.dogs, required this.repository});
+
+  @override
+  State<_AddRecordSheet> createState() => _AddRecordSheetState();
+}
+
+class _AddRecordSheetState extends State<_AddRecordSheet> {
+  late String _dogId = widget.dogs.first.id;
+  RecordType _type = RecordType.vaccine;
+  final _noteController = TextEditingController();
+  bool _saving = false;
+  String? _error;
+
+  static const _typeLabels = {
+    RecordType.vaccine: 'ワクチン接種',
+    RecordType.grooming: 'トリミング',
+    RecordType.vet: '通院',
+    RecordType.medication: '投薬',
+  };
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(child: Text('記録を追加', style: AppText.displaySmall)),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: AppColors.ink),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _dogId,
+            decoration: _fieldDecoration(),
+            items: widget.dogs
+                .map((d) => DropdownMenuItem(value: d.id, child: Text(d.name)))
+                .toList(),
+            onChanged: (v) => setState(() => _dogId = v!),
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<RecordType>(
+            initialValue: _type,
+            decoration: _fieldDecoration(),
+            items: _typeLabels.entries
+                .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                .toList(),
+            onChanged: (v) => setState(() => _type = v!),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _noteController,
+            decoration: _fieldDecoration(hint: 'メモ(任意)'),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(_error!, style: const TextStyle(fontSize: 11, color: AppColors.concernBorder)),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.ink,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('保存する', style: TextStyle(fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final note = _noteController.text.trim();
+    final label = note.isEmpty ? _typeLabels[_type]! : note;
+    try {
+      await widget.repository.addRecord(dogId: _dogId, type: _type, label: label);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) setState(() => _error = '保存に失敗しました: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  InputDecoration _fieldDecoration({String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+    );
+  }
+}

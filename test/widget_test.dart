@@ -4,22 +4,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dogapp/main.dart';
+import 'package:dogapp/screens/home_screen.dart';
 
 import 'fakes/fake_dogapp_api_client.dart';
 
+/// デフォルトのテスト画面サイズ(800x600)は横長で、この電話向けUIには
+/// 小さすぎる(ボトムナビの分だけ本文が画面外に出て、要素にタップが
+/// 当たらなくなる)。実機に近いサイズに変更してから各テストを実行する。
+Future<void> _pumpApp(
+  WidgetTester tester, {
+  Future<Uint8List?> Function()? pickImage,
+}) async {
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  await tester.pumpWidget(DogHealthApp(
+    apiClient: FakeDogappApiClient(),
+    pickImage: pickImage,
+  ));
+  await tester.pump(); // loadDogs()の完了を待つ
+}
+
 void main() {
   testWidgets('初期表示はホーム画面で、2匹の名前が表示される', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     expect(find.text('おかえりなさい'), findsOneWidget);
-    expect(find.text('レオ'), findsOneWidget);
-    expect(find.text('ノア'), findsOneWidget);
+    // 「レオ」「ノア」はホーム以外のタブ(犬たち一覧・健康チェックの犬選択)にも
+    // IndexedStackの裏で同時に存在し、さらにホーム画面内でも今後の予定
+    // タイムラインに同じ犬の予定が複数件あれば名前が繰り返し表示されるため、
+    // ホーム画面内に「1件以上」表示されていることだけを確認する。
+    final home = find.byType(HomeScreen);
+    expect(find.descendant(of: home, matching: find.text('レオ')), findsWidgets);
+    expect(find.descendant(of: home, matching: find.text('ノア')), findsWidgets);
   });
 
   testWidgets('「犬たち」タブに切り替えると一覧画面が表示される', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     await tester.tap(find.text('犬たち').last);
     await tester.pumpAndSettle();
@@ -28,8 +51,7 @@ void main() {
   });
 
   testWidgets('犬一覧からレオをタップするとプロフィール画面(体重推移)に遷移する', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     await tester.tap(find.text('犬たち').last);
     await tester.pumpAndSettle();
@@ -46,12 +68,11 @@ void main() {
   });
 
   testWidgets('ホーム画面のレオカードをタップすると犬たちタブのプロフィールに直接遷移する', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     // ホーム画面上のレオカード(DogAvatarを含むInkWell)をタップ
     final leoHomeCard = find.ancestor(
-      of: find.text('レオ').first,
+      of: find.descendant(of: find.byType(HomeScreen), matching: find.text('レオ')),
       matching: find.byType(InkWell),
     );
     await tester.tap(leoHomeCard.first);
@@ -61,12 +82,8 @@ void main() {
   });
 
   testWidgets('健康チェックタブで写真ボタンをタップすると解析中→結果の順に遷移する', (tester) async {
-    await tester.pumpWidget(DogHealthApp(
-      apiClient: FakeDogappApiClient(),
-      // ネイティブの画像ピッカーはテスト環境で動かないため、ダミーの画像バイト列を返す
-      pickImage: () async => Uint8List.fromList([0]),
-    ));
-    await tester.pump(); // loadDogs()の完了を待つ
+    // ネイティブの画像ピッカーはテスト環境で動かないため、ダミーの画像バイト列を返す
+    await _pumpApp(tester, pickImage: () async => Uint8List.fromList([0]));
 
     await tester.tap(find.text('健康チェック').last);
     await tester.pumpAndSettle();
@@ -84,8 +101,7 @@ void main() {
   });
 
   testWidgets('記録タブで追加ボタンをタップするとモーダルが開き、2つのドロップダウンが表示される', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     await tester.tap(find.text('記録').last);
     await tester.pumpAndSettle();
@@ -95,18 +111,21 @@ void main() {
     await tester.tap(find.text('記録を追加'));
     await tester.pumpAndSettle();
 
+    // find.byType(DropdownButtonFormField)はジェネリック型引数(<dynamic>)を
+    // 厳密一致で比較するため<String>/<RecordType>のインスタンスを拾えない。
+    // is判定を使うpredicateで型引数を問わずに数える。
+    final anyDropdown = find.byWidgetPredicate((w) => w is DropdownButtonFormField);
     expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
-    expect(find.byType(DropdownButtonFormField), findsNWidgets(2));
+    expect(anyDropdown, findsNWidgets(2));
 
     // 閉じるボタンでモーダルが閉じることを確認
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
-    expect(find.byType(DropdownButtonFormField), findsNothing);
+    expect(anyDropdown, findsNothing);
   });
 
   testWidgets('記録一覧は日付の新しい順に並んでいる', (tester) async {
-    await tester.pumpWidget(DogHealthApp(apiClient: FakeDogappApiClient()));
-    await tester.pump(); // loadDogs()の完了を待つ
+    await _pumpApp(tester);
 
     await tester.tap(find.text('記録').last);
     await tester.pumpAndSettle();

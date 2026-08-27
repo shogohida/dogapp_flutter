@@ -15,6 +15,9 @@ class FakeDogappApiClient implements DogappApiClient {
     required String dogId,
     required Uint8List imageBytes,
   }) async {
+    // 実ネットワークと同じくタイマー経由の遅延を挟むことで、呼び出し側の
+    // 「analyzing」中間状態がテストのpump()で正しく観測できるようにする。
+    await Future.delayed(const Duration(milliseconds: 50));
     return mockAIResults.first;
   }
 

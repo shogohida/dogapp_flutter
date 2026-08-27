@@ -21,14 +21,16 @@ class LocationService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
       throw LocationServiceException(LocationFailure.permissionDenied);
     }
   }
 
   Stream<Position> positionStream() {
     return Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 5),
+      locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high, distanceFilter: 5),
     );
   }
 }

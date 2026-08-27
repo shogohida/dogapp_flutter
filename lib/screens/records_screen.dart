@@ -8,7 +8,8 @@ class RecordsScreen extends StatelessWidget {
   final List<Dog> dogs;
   final DogsRepository repository;
 
-  const RecordsScreen({super.key, required this.dogs, required this.repository});
+  const RecordsScreen(
+      {super.key, required this.dogs, required this.repository});
 
   List<({HealthRecord record, Dog dog})> get _allRecords {
     final combined = <({HealthRecord record, Dog dog})>[];
@@ -32,7 +33,9 @@ class RecordsScreen extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: dogs.isEmpty ? null : () => _showAddRecordSheet(context, dogs, repository),
+            onPressed: dogs.isEmpty
+                ? null
+                : () => _showAddRecordSheet(context, dogs, repository),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.ink,
               foregroundColor: Colors.white,
@@ -47,11 +50,13 @@ class RecordsScreen extends StatelessWidget {
         ..._allRecords.map((item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                  border:
+                      Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
                 ),
                 child: Row(
                   children: [
@@ -62,14 +67,17 @@ class RecordsScreen extends StatelessWidget {
                         color: item.dog.accent.withValues(alpha: 0.13),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(item.record.type.icon, size: 16, color: item.dog.accent),
+                      child: Icon(item.record.type.icon,
+                          size: 16, color: item.dog.accent),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.record.label, style: AppText.body, overflow: TextOverflow.ellipsis),
+                          Text(item.record.label,
+                              style: AppText.body,
+                              overflow: TextOverflow.ellipsis),
                           Text(item.dog.name, style: AppText.caption),
                         ],
                       ),
@@ -87,7 +95,8 @@ class RecordsScreen extends StatelessWidget {
   }
 }
 
-void _showAddRecordSheet(BuildContext context, List<Dog> dogs, DogsRepository repository) {
+void _showAddRecordSheet(
+    BuildContext context, List<Dog> dogs, DogsRepository repository) {
   showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.paper,
@@ -145,7 +154,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
         children: [
           Row(
             children: [
-              Expanded(child: Text(l10n.addRecord, style: AppText.displaySmall)),
+              Expanded(
+                  child: Text(l10n.addRecord, style: AppText.displaySmall)),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.close, color: AppColors.ink),
@@ -166,7 +176,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
             initialValue: _type,
             decoration: _fieldDecoration(),
             items: typeLabels.entries
-                .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+                .map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                 .toList(),
             onChanged: (v) => setState(() => _type = v!),
           ),
@@ -177,7 +188,9 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
-            Text(_error!, style: const TextStyle(fontSize: 11, color: AppColors.concernBorder)),
+            Text(_error!,
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.concernBorder)),
           ],
           const SizedBox(height: 16),
           SizedBox(
@@ -194,7 +207,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
                     )
                   : Text(l10n.save, style: const TextStyle(fontSize: 13)),
             ),
@@ -204,7 +218,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
     );
   }
 
-  Future<void> _save(AppLocalizations l10n, Map<RecordType, String> typeLabels) async {
+  Future<void> _save(
+      AppLocalizations l10n, Map<RecordType, String> typeLabels) async {
     setState(() {
       _saving = true;
       _error = null;
@@ -212,7 +227,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
     final note = _noteController.text.trim();
     final label = note.isEmpty ? typeLabels[_type]! : note;
     try {
-      await widget.repository.addRecord(dogId: _dogId, type: _type, label: label);
+      await widget.repository
+          .addRecord(dogId: _dogId, type: _type, label: label);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = l10n.saveFailed('$e'));

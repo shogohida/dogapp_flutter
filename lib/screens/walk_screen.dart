@@ -67,13 +67,19 @@ class _WalkScreenState extends State<WalkScreen> {
                 final selected = dog.id == _selectedDogId;
                 return Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(right: dog == widget.dogs.first ? 8 : 0),
+                    padding: EdgeInsets.only(
+                        right: dog == widget.dogs.first ? 8 : 0),
                     child: OutlinedButton(
-                      onPressed: repo.isRecording ? null : () => _selectDog(dog.id),
+                      onPressed:
+                          repo.isRecording ? null : () => _selectDog(dog.id),
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: selected ? dog.accent.withValues(alpha: 0.1) : Colors.white,
+                        backgroundColor: selected
+                            ? dog.accent.withValues(alpha: 0.1)
+                            : Colors.white,
                         side: BorderSide(
-                          color: selected ? dog.accent : AppColors.ink.withValues(alpha: 0.12),
+                          color: selected
+                              ? dog.accent
+                              : AppColors.ink.withValues(alpha: 0.12),
                         ),
                         shape: const StadiumBorder(),
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -100,7 +106,9 @@ class _WalkScreenState extends State<WalkScreen> {
               child: ElevatedButton(
                 onPressed: _toggleRecording,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: repo.isRecording ? AppColors.concernBorder : AppColors.ink,
+                  backgroundColor: repo.isRecording
+                      ? AppColors.concernBorder
+                      : AppColors.ink,
                   foregroundColor: Colors.white,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -148,7 +156,8 @@ class _WalkMapCard extends StatelessWidget {
             border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
           ),
           child: Center(
-            child: Icon(Icons.map_outlined, size: 40, color: AppColors.ink.withValues(alpha: 0.2)),
+            child: Icon(Icons.map_outlined,
+                size: 40, color: AppColors.ink.withValues(alpha: 0.2)),
           ),
         ),
       );
@@ -167,7 +176,10 @@ class _WalkMapCard extends StatelessWidget {
               userAgentPackageName: 'com.dogapp.flutter',
             ),
             PolylineLayer(
-              polylines: [Polyline(points: latLngs, strokeWidth: 4, color: AppColors.marigold)],
+              polylines: [
+                Polyline(
+                    points: latLngs, strokeWidth: 4, color: AppColors.marigold)
+              ],
             ),
             MarkerLayer(
               markers: [
@@ -175,7 +187,8 @@ class _WalkMapCard extends StatelessWidget {
                   point: latLngs.last,
                   width: 20,
                   height: 20,
-                  child: const Icon(Icons.circle, color: AppColors.concernBorder, size: 14),
+                  child: const Icon(Icons.circle,
+                      color: AppColors.concernBorder, size: 14),
                 ),
               ],
             ),
@@ -206,7 +219,9 @@ class _LiveStats extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _Stat(label: l10n.distance, value: '${km.toStringAsFixed(2)} ${l10n.km}'),
+          _Stat(
+              label: l10n.distance,
+              value: '${km.toStringAsFixed(2)} ${l10n.km}'),
           _Stat(label: l10n.duration, value: _formatDuration(duration)),
         ],
       ),
@@ -247,7 +262,8 @@ class _LocationErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final message = error is LocationServiceException
-        ? ((error as LocationServiceException).reason == LocationFailure.serviceDisabled
+        ? ((error as LocationServiceException).reason ==
+                LocationFailure.serviceDisabled
             ? l10n.locationServiceDisabled
             : l10n.locationPermissionDenied)
         : '$error';
@@ -261,7 +277,8 @@ class _LocationErrorBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.location_off_outlined, size: 18, color: AppColors.concernBorder),
+          const Icon(Icons.location_off_outlined,
+              size: 18, color: AppColors.concernBorder),
           const SizedBox(width: 8),
           Expanded(child: Text(message, style: AppText.body)),
         ],
@@ -287,21 +304,25 @@ class _RecommendedCoursesSection extends StatelessWidget {
           .map((course) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                    border: Border.all(
+                        color: AppColors.ink.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.route_outlined, size: 18, color: AppColors.inkSoft),
+                      const Icon(Icons.route_outlined,
+                          size: 18, color: AppColors.inkSoft),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(l10n.walkedNTimes(course.walkCount), style: AppText.body),
+                            Text(l10n.walkedNTimes(course.walkCount),
+                                style: AppText.body),
                             Text(
                               '${(course.averageDistanceMeters / 1000).toStringAsFixed(2)} ${l10n.km}',
                               style: AppText.caption,
@@ -327,10 +348,13 @@ class _WalkHistoryList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     if (repository.isLoading && repository.walks.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
+      return const Center(
+          child: Padding(
+              padding: EdgeInsets.all(16), child: CircularProgressIndicator()));
     }
     if (repository.error != null && repository.walks.isEmpty) {
-      return Text(l10n.loadWalksFailed('${repository.error}'), style: AppText.bodySoft);
+      return Text(l10n.loadWalksFailed('${repository.error}'),
+          style: AppText.bodySoft);
     }
     if (repository.walks.isEmpty) {
       return Text(l10n.noWalksYet, style: AppText.bodySoft);
@@ -340,21 +364,26 @@ class _WalkHistoryList extends StatelessWidget {
           .map((walk) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                    border: Border.all(
+                        color: AppColors.ink.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.directions_walk, size: 18, color: AppColors.inkSoft),
+                      const Icon(Icons.directions_walk,
+                          size: 18, color: AppColors.inkSoft),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${walk.startedAt.month}/${walk.startedAt.day}', style: AppText.body),
+                            Text(
+                                '${walk.startedAt.month}/${walk.startedAt.day}',
+                                style: AppText.body),
                             Text(
                               '${(walk.distanceMeters / 1000).toStringAsFixed(2)} ${l10n.km} ・ '
                               '${walk.duration.inMinutes}${l10n.minutesShort}',

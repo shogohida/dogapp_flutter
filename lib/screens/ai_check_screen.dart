@@ -7,6 +7,7 @@ import '../models/dog.dart';
 import '../theme/app_theme.dart';
 
 enum _CheckStep { idle, analyzing, result, error }
+
 enum _CheckMedia { photo, video }
 
 /// 画像選択の実処理。「撮る・選ぶ」の両方に対応するため、まずカメラ/ギャラリーを
@@ -25,12 +26,14 @@ Future<Uint8List?> pickCheckImage(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: const Icon(Icons.photo_camera_outlined, color: AppColors.ink),
+            leading:
+                const Icon(Icons.photo_camera_outlined, color: AppColors.ink),
             title: Text(l10n.takePhoto, style: AppText.body),
             onTap: () => Navigator.of(context).pop(ImageSource.camera),
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library_outlined, color: AppColors.ink),
+            leading:
+                const Icon(Icons.photo_library_outlined, color: AppColors.ink),
             title: Text(l10n.chooseFromGallery, style: AppText.body),
             onTap: () => Navigator.of(context).pop(ImageSource.gallery),
           ),
@@ -40,7 +43,8 @@ Future<Uint8List?> pickCheckImage(BuildContext context) async {
     ),
   );
   if (source == null) return null;
-  final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+  final picked =
+      await ImagePicker().pickImage(source: source, imageQuality: 85);
   if (picked == null) return null;
   return picked.readAsBytes();
 }
@@ -66,7 +70,8 @@ Future<XFile?> pickCheckVideo(BuildContext context) async {
             onTap: () => Navigator.of(context).pop(ImageSource.camera),
           ),
           ListTile(
-            leading: const Icon(Icons.video_library_outlined, color: AppColors.ink),
+            leading:
+                const Icon(Icons.video_library_outlined, color: AppColors.ink),
             title: Text(l10n.chooseVideoFromGallery, style: AppText.body),
             onTap: () => Navigator.of(context).pop(ImageSource.gallery),
           ),
@@ -76,7 +81,8 @@ Future<XFile?> pickCheckVideo(BuildContext context) async {
     ),
   );
   if (source == null) return null;
-  return ImagePicker().pickVideo(source: source, maxDuration: const Duration(seconds: 15));
+  return ImagePicker()
+      .pickVideo(source: source, maxDuration: const Duration(seconds: 15));
 }
 
 class AICheckScreen extends StatefulWidget {
@@ -130,7 +136,8 @@ class _AICheckScreenState extends State<AICheckScreen> {
     setState(() => _step = _CheckStep.analyzing);
     try {
       final result = _media == _CheckMedia.photo
-          ? await widget.repository.runAiCheck(dogId: _selectedDogId, imageBytes: photoBytes!)
+          ? await widget.repository
+              .runAiCheck(dogId: _selectedDogId, imageBytes: photoBytes!)
           : await widget.repository.runGaitCheck(
               dogId: _selectedDogId,
               videoBytes: await video!.readAsBytes(),
@@ -168,7 +175,9 @@ class _AICheckScreenState extends State<AICheckScreen> {
         Text(l10n.healthCheckTitle, style: AppText.display),
         const SizedBox(height: 6),
         Text(
-          _media == _CheckMedia.photo ? l10n.healthCheckDescription : l10n.gaitCheckDescription,
+          _media == _CheckMedia.photo
+              ? l10n.healthCheckDescription
+              : l10n.gaitCheckDescription,
           style: AppText.bodySoft,
         ),
         const SizedBox(height: 14),
@@ -179,7 +188,8 @@ class _AICheckScreenState extends State<AICheckScreen> {
                 label: l10n.healthCheckModePhoto,
                 icon: Icons.photo_camera_outlined,
                 selected: _media == _CheckMedia.photo,
-                onTap: canInteract ? () => _selectMedia(_CheckMedia.photo) : null,
+                onTap:
+                    canInteract ? () => _selectMedia(_CheckMedia.photo) : null,
               ),
             ),
             const SizedBox(width: 8),
@@ -188,7 +198,8 @@ class _AICheckScreenState extends State<AICheckScreen> {
                 label: l10n.healthCheckModeVideo,
                 icon: Icons.videocam_outlined,
                 selected: _media == _CheckMedia.video,
-                onTap: canInteract ? () => _selectMedia(_CheckMedia.video) : null,
+                onTap:
+                    canInteract ? () => _selectMedia(_CheckMedia.video) : null,
               ),
             ),
           ],
@@ -199,13 +210,18 @@ class _AICheckScreenState extends State<AICheckScreen> {
             final selected = dog.id == _selectedDogId;
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: dog == widget.dogs.first ? 8 : 0),
+                padding:
+                    EdgeInsets.only(right: dog == widget.dogs.first ? 8 : 0),
                 child: OutlinedButton(
                   onPressed: () => setState(() => _selectedDogId = dog.id),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: selected ? dog.accent.withValues(alpha: 0.1) : Colors.white,
+                    backgroundColor: selected
+                        ? dog.accent.withValues(alpha: 0.1)
+                        : Colors.white,
                     side: BorderSide(
-                      color: selected ? dog.accent : AppColors.ink.withValues(alpha: 0.12),
+                      color: selected
+                          ? dog.accent
+                          : AppColors.ink.withValues(alpha: 0.12),
                     ),
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -256,8 +272,12 @@ class _MediaModeButton extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
-        backgroundColor: selected ? AppColors.ink.withValues(alpha: 0.06) : Colors.white,
-        side: BorderSide(color: selected ? AppColors.ink : AppColors.ink.withValues(alpha: 0.12)),
+        backgroundColor:
+            selected ? AppColors.ink.withValues(alpha: 0.06) : Colors.white,
+        side: BorderSide(
+            color: selected
+                ? AppColors.ink
+                : AppColors.ink.withValues(alpha: 0.12)),
         shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(vertical: 10),
       ),
@@ -300,14 +320,17 @@ class _IdleCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(isVideo ? l10n.takeOrChooseVideo : l10n.takeOrChoosePhoto, style: AppText.body),
+              Text(isVideo ? l10n.takeOrChooseVideo : l10n.takeOrChoosePhoto,
+                  style: AppText.body),
               const SizedBox(height: 4),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.upload_outlined, size: 12, color: AppColors.inkSoft),
+                  const Icon(Icons.upload_outlined,
+                      size: 12, color: AppColors.inkSoft),
                   const SizedBox(width: 4),
-                  Text(isVideo ? l10n.tapToUploadVideo : l10n.tapToUpload, style: AppText.caption),
+                  Text(isVideo ? l10n.tapToUploadVideo : l10n.tapToUpload,
+                      style: AppText.caption),
                 ],
               ),
             ],
@@ -401,7 +424,8 @@ class _AnalyzingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(AppLocalizations.of(context)!.analyzing, style: AppText.bodySoft),
+              Text(AppLocalizations.of(context)!.analyzing,
+                  style: AppText.bodySoft),
             ],
           ),
         ),
@@ -432,9 +456,12 @@ class _ErrorCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.error_outline, size: 20, color: AppColors.concernBorder),
+              const Icon(Icons.error_outline,
+                  size: 20, color: AppColors.concernBorder),
               const SizedBox(width: 8),
-              Expanded(child: Text(l10n.analysisFailed, style: AppText.displaySmall)),
+              Expanded(
+                  child:
+                      Text(l10n.analysisFailed, style: AppText.displaySmall)),
             ],
           ),
           const SizedBox(height: 8),
@@ -467,11 +494,23 @@ class _ResultCard extends StatelessWidget {
   ({Color bg, Color border, IconData icon}) get _style {
     switch (result.level) {
       case AICheckLevel.normal:
-        return (bg: AppColors.normalBg, border: AppColors.normalBorder, icon: Icons.check_circle_outline);
+        return (
+          bg: AppColors.normalBg,
+          border: AppColors.normalBorder,
+          icon: Icons.check_circle_outline
+        );
       case AICheckLevel.watch:
-        return (bg: AppColors.watchBg, border: AppColors.watchBorder, icon: Icons.error_outline);
+        return (
+          bg: AppColors.watchBg,
+          border: AppColors.watchBorder,
+          icon: Icons.error_outline
+        );
       case AICheckLevel.concern:
-        return (bg: AppColors.concernBg, border: AppColors.concernBorder, icon: Icons.error_outline);
+        return (
+          bg: AppColors.concernBg,
+          border: AppColors.concernBorder,
+          icon: Icons.error_outline
+        );
     }
   }
 
@@ -489,7 +528,8 @@ class _ResultCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
             ),
-            child: Icon(Icons.pets, size: 40, color: AppColors.ink.withValues(alpha: 0.15)),
+            child: Icon(Icons.pets,
+                size: 40, color: AppColors.ink.withValues(alpha: 0.15)),
           ),
         ),
         const SizedBox(height: 12),
@@ -509,7 +549,8 @@ class _ResultCard extends StatelessWidget {
                 children: [
                   Icon(s.icon, size: 20, color: s.border),
                   const SizedBox(width: 8),
-                  Expanded(child: Text(result.title, style: AppText.displaySmall)),
+                  Expanded(
+                      child: Text(result.title, style: AppText.displaySmall)),
                 ],
               ),
               const SizedBox(height: 8),

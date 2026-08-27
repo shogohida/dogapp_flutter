@@ -35,12 +35,18 @@ void main() {
               {'month': '3月', 'kg': 24.8},
             ],
             'records': [
-              {'id': '1', 'type': 'vaccine', 'label': '混合ワクチン接種', 'date': '2026-07-12T00:00:00Z'},
+              {
+                'id': '1',
+                'type': 'vaccine',
+                'label': '混合ワクチン接種',
+                'date': '2026-07-12T00:00:00Z'
+              },
             ],
           },
         ]);
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final dogs = await client.fetchDogs('owner-1');
 
@@ -52,8 +58,10 @@ void main() {
     });
 
     test('2xx以外のステータスコードではApiExceptionを投げる', () async {
-      final mock = MockClient((request) async => http.Response('server error', 500));
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final mock =
+          MockClient((request) async => http.Response('server error', 500));
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       expect(() => client.fetchDogs('owner-1'), throwsA(isA<ApiException>()));
     });
@@ -66,9 +74,11 @@ void main() {
         expect(request.url.path, '/dogs/leo/ai-check');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['imageBase64'], base64Encode([1, 2, 3]));
-        return _jsonResponse({'level': 'watch', 'title': '軽度の乾燥', 'detail': '様子を見てください'});
+        return _jsonResponse(
+            {'level': 'watch', 'title': '軽度の乾燥', 'detail': '様子を見てください'});
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final result = await client.runAiCheck(
         dogId: 'leo',
@@ -85,14 +95,17 @@ void main() {
       final mock = MockClient((request) async {
         expect(request.method, 'POST');
         expect(request.url.path, '/dogs/leo/gait-check');
-        expect(request.headers['content-type'], contains('multipart/form-data'));
+        expect(
+            request.headers['content-type'], contains('multipart/form-data'));
         // multipartのボディはUTF-8として不正な可能性があるためallowMalformedで読む。
         final rawBody = utf8.decode(request.bodyBytes, allowMalformed: true);
         expect(rawBody, contains('walk.mp4'));
         expect(rawBody, contains('FAKE_VIDEO_BYTES'));
-        return _jsonResponse({'level': 'concern', 'title': '足を引きずる動き', 'detail': '動物病院へ'});
+        return _jsonResponse(
+            {'level': 'concern', 'title': '足を引きずる動き', 'detail': '動物病院へ'});
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final result = await client.runGaitCheck(
         dogId: 'leo',
@@ -113,11 +126,18 @@ void main() {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['type'], 'vet');
         expect(body['label'], '定期健診');
-        return _jsonResponse({'id': '99', 'type': 'vet', 'label': '定期健診', 'date': '2026-08-27T00:00:00Z'});
+        return _jsonResponse({
+          'id': '99',
+          'type': 'vet',
+          'label': '定期健診',
+          'date': '2026-08-27T00:00:00Z'
+        });
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
-      final record = await client.createRecord(dogId: 'leo', type: RecordType.vet, label: '定期健診');
+      final record = await client.createRecord(
+          dogId: 'leo', type: RecordType.vet, label: '定期健診');
 
       expect(record.id, '99');
       expect(record.type, RecordType.vet);
@@ -142,7 +162,8 @@ void main() {
           },
         ]);
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final walks = await client.fetchWalks('leo');
 
@@ -171,14 +192,18 @@ void main() {
           'points': body['points'],
         });
       });
-      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final walk = await client.createWalk(
         dogId: 'leo',
         startedAt: DateTime.utc(2026, 8, 27, 10),
         duration: const Duration(seconds: 600),
         distanceMeters: 800,
-        points: [GeoPoint(lat: 35.0, lng: 139.0, timestamp: DateTime.utc(2026, 8, 27, 10))],
+        points: [
+          GeoPoint(
+              lat: 35.0, lng: 139.0, timestamp: DateTime.utc(2026, 8, 27, 10))
+        ],
       );
 
       expect(walk.id, 'w2');

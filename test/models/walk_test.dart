@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('GeoPoint.fromJson/toJsonは対称', () {
-    final point = GeoPoint(lat: 35.681, lng: 139.767, timestamp: DateTime.utc(2026, 8, 27, 10));
+    final point = GeoPoint(
+        lat: 35.681, lng: 139.767, timestamp: DateTime.utc(2026, 8, 27, 10));
     final restored = GeoPoint.fromJson(point.toJson());
     expect(restored.lat, point.lat);
     expect(restored.lng, point.lng);
@@ -17,7 +18,10 @@ void main() {
       startedAt: DateTime.utc(2026, 8, 27, 10),
       duration: const Duration(minutes: 20),
       distanceMeters: 1500,
-      points: [GeoPoint(lat: 35.0, lng: 139.0, timestamp: DateTime.utc(2026, 8, 27, 10))],
+      points: [
+        GeoPoint(
+            lat: 35.0, lng: 139.0, timestamp: DateTime.utc(2026, 8, 27, 10))
+      ],
     );
     final restored = WalkRoute.fromJson(walk.toJson());
 

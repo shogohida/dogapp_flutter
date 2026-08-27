@@ -85,7 +85,8 @@ void main() {
 
     // ホーム画面上のレオカード(DogAvatarを含むInkWell)をタップ
     final leoHomeCard = find.ancestor(
-      of: find.descendant(of: find.byType(HomeScreen), matching: find.text('レオ')),
+      of: find.descendant(
+          of: find.byType(HomeScreen), matching: find.text('レオ')),
       matching: find.byType(InkWell),
     );
     await tester.tap(leoHomeCard.first);
@@ -96,7 +97,8 @@ void main() {
 
   testWidgets('健康チェックタブで写真ボタンをタップすると解析中→結果の順に遷移する', (tester) async {
     // ネイティブの画像ピッカーはテスト環境で動かないため、ダミーの画像バイト列を返す
-    await _pumpApp(tester, pickImage: (context) async => Uint8List.fromList([0]));
+    await _pumpApp(tester,
+        pickImage: (context) async => Uint8List.fromList([0]));
 
     await tester.tap(find.text('健康チェック').last);
     await tester.pumpAndSettle();
@@ -156,7 +158,8 @@ void main() {
     // find.byType(DropdownButtonFormField)はジェネリック型引数(<dynamic>)を
     // 厳密一致で比較するため<String>/<RecordType>のインスタンスを拾えない。
     // is判定を使うpredicateで型引数を問わずに数える。
-    final anyDropdown = find.byWidgetPredicate((w) => w is DropdownButtonFormField);
+    final anyDropdown =
+        find.byWidgetPredicate((w) => w is DropdownButtonFormField);
     expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
     expect(anyDropdown, findsNWidgets(2));
 

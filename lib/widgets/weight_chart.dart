@@ -71,7 +71,8 @@ class _WeightChartPainter extends CustomPainter {
       ..strokeWidth = 1;
     for (final t in [0.0, 0.5, 1.0]) {
       final y = topPadding + plotHeight * t;
-      canvas.drawLine(Offset(leftPadding, y), Offset(size.width - rightPadding, y), gridPaint);
+      canvas.drawLine(Offset(leftPadding, y),
+          Offset(size.width - rightPadding, y), gridPaint);
 
       final labelValue = maxKg - (maxKg - minKg) * t;
       final tp = TextPainter(

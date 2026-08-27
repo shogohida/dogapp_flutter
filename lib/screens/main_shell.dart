@@ -55,9 +55,21 @@ class _MainShellState extends State<MainShell> {
     final tabs = [
       (label: l10n.tabHome, icon: Icons.home_outlined, activeIcon: Icons.home),
       (label: l10n.tabDogs, icon: Icons.pets_outlined, activeIcon: Icons.pets),
-      (label: l10n.tabHealthCheck, icon: Icons.camera_alt_outlined, activeIcon: Icons.camera_alt),
-      (label: l10n.tabRecords, icon: Icons.list_alt_outlined, activeIcon: Icons.list_alt),
-      (label: l10n.tabWalk, icon: Icons.directions_walk_outlined, activeIcon: Icons.directions_walk),
+      (
+        label: l10n.tabHealthCheck,
+        icon: Icons.camera_alt_outlined,
+        activeIcon: Icons.camera_alt
+      ),
+      (
+        label: l10n.tabRecords,
+        icon: Icons.list_alt_outlined,
+        activeIcon: Icons.list_alt
+      ),
+      (
+        label: l10n.tabWalk,
+        icon: Icons.directions_walk_outlined,
+        activeIcon: Icons.directions_walk
+      ),
     ];
 
     return Scaffold(
@@ -104,7 +116,8 @@ class _MainShellState extends State<MainShell> {
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.paper,
-            border: Border(top: BorderSide(color: AppColors.ink.withValues(alpha: 0.08))),
+            border: Border(
+                top: BorderSide(color: AppColors.ink.withValues(alpha: 0.08))),
           ),
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
@@ -115,7 +128,8 @@ class _MainShellState extends State<MainShell> {
               return InkWell(
                 onTap: () => setState(() => _tabIndex = i),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -161,7 +175,8 @@ class _LoadErrorView extends StatelessWidget {
           children: [
             const Icon(Icons.cloud_off, size: 40, color: AppColors.inkSoft),
             const SizedBox(height: 12),
-            Text(l10n.loadErrorTitle, style: AppText.body, textAlign: TextAlign.center),
+            Text(l10n.loadErrorTitle,
+                style: AppText.body, textAlign: TextAlign.center),
             const SizedBox(height: 6),
             Text('$error', style: AppText.caption, textAlign: TextAlign.center),
             const SizedBox(height: 16),

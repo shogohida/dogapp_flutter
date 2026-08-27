@@ -45,7 +45,8 @@ class DogsListScreen extends StatelessWidget {
   final List<Dog> dogs;
   final void Function(String dogId) onSelectDog;
 
-  const DogsListScreen({super.key, required this.dogs, required this.onSelectDog});
+  const DogsListScreen(
+      {super.key, required this.dogs, required this.onSelectDog});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +66,8 @@ class DogsListScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                    border: Border.all(
+                        color: AppColors.ink.withValues(alpha: 0.08)),
                   ),
                   child: Row(
                     children: [
@@ -76,7 +78,8 @@ class DogsListScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(dog.name, style: AppText.displaySmall),
-                            Text(l10n.breedColorLine(dog.breed, dog.color), style: AppText.caption),
+                            Text(l10n.breedColorLine(dog.breed, dog.color),
+                                style: AppText.caption),
                           ],
                         ),
                       ),
@@ -124,7 +127,8 @@ class DogProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(dog.breed, style: AppText.caption),
-                Text(l10n.dogInfoLine(dog.color, dog.ageInYears(2026)), style: AppText.caption),
+                Text(l10n.dogInfoLine(dog.color, dog.ageInYears(2026)),
+                    style: AppText.caption),
               ],
             ),
           ],
@@ -147,11 +151,13 @@ class DogProfileScreen extends StatelessWidget {
         ...dog.records.map((r) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                  border:
+                      Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
                 ),
                 child: Row(
                   children: [

@@ -34,7 +34,11 @@ void main() {
       accent: Colors.orange,
       weightHistory: const [WeightEntry(month: '3月', kg: 24.8)],
       records: [
-        HealthRecord(id: '1', type: RecordType.vet, label: '定期健診', date: DateTime.utc(2026, 8, 15)),
+        HealthRecord(
+            id: '1',
+            type: RecordType.vet,
+            label: '定期健診',
+            date: DateTime.utc(2026, 8, 15)),
       ],
     );
     final restored = Dog.fromJson(dog.toJson(), accent: Colors.blue);
@@ -58,7 +62,11 @@ void main() {
       weightHistory: [],
       records: [],
     );
-    final newRecord = HealthRecord(id: '1', type: RecordType.vaccine, label: 'ワクチン', date: DateTime.utc(2026, 1, 1));
+    final newRecord = HealthRecord(
+        id: '1',
+        type: RecordType.vaccine,
+        label: 'ワクチン',
+        date: DateTime.utc(2026, 1, 1));
 
     final updated = dog.copyWithRecords([newRecord]);
 

@@ -32,8 +32,10 @@ class _StubApiClient implements DogappApiClient {
   }
 
   @override
-  Future<AICheckResult> runAiCheck({required String dogId, required Uint8List imageBytes}) async {
-    return const AICheckResult(level: AICheckLevel.normal, title: 't', detail: 'd');
+  Future<AICheckResult> runAiCheck(
+      {required String dogId, required Uint8List imageBytes}) async {
+    return const AICheckResult(
+        level: AICheckLevel.normal, title: 't', detail: 'd');
   }
 
   @override
@@ -42,7 +44,8 @@ class _StubApiClient implements DogappApiClient {
     required Uint8List videoBytes,
     required String filename,
   }) async {
-    return const AICheckResult(level: AICheckLevel.normal, title: 't', detail: 'd');
+    return const AICheckResult(
+        level: AICheckLevel.normal, title: 't', detail: 'd');
   }
 
   @override
@@ -90,7 +93,8 @@ void main() {
   });
 
   test('loadDogsが失敗するとerrorが入りdogsは空のまま', () async {
-    final repo = DogsRepository(client: _StubApiClient(dogsError: Exception('network down')));
+    final repo = DogsRepository(
+        client: _StubApiClient(dogsError: Exception('network down')));
 
     await repo.loadDogs();
 
@@ -100,7 +104,11 @@ void main() {
   });
 
   test('addRecordは該当する犬のrecordsだけを更新する', () async {
-    final newRecord = HealthRecord(id: '1', type: RecordType.vet, label: '定期健診', date: DateTime(2026, 8, 27));
+    final newRecord = HealthRecord(
+        id: '1',
+        type: RecordType.vet,
+        label: '定期健診',
+        date: DateTime(2026, 8, 27));
     final repo = DogsRepository(
       client: _StubApiClient(dogsResult: [_leo], createRecordResult: newRecord),
     );

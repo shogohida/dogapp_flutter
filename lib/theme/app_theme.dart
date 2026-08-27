@@ -15,7 +15,12 @@ class AppColors {
 
   /// APIから届く犬の並び順に対してインデックスで割り当てるアクセントカラー。
   /// dogapp-apiのレスポンスに色は含まれないため、表示側で決定的に選ぶ。
-  static const accentPalette = [marigold, sageDark, concernBorder, normalBorder];
+  static const accentPalette = [
+    marigold,
+    sageDark,
+    concernBorder,
+    normalBorder
+  ];
 
   static const normalBg = Color(0xFFEEF3EE);
   static const normalBorder = Color(0xFF4F7864);

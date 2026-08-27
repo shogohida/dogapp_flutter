@@ -31,7 +31,8 @@ class HomeScreen extends StatelessWidget {
                           right: dog == dogs.first ? 6 : 0,
                           left: dog == dogs.first ? 0 : 6,
                         ),
-                        child: _DogCard(dog: dog, onTap: () => onSelectDog(dog.id)),
+                        child: _DogCard(
+                            dog: dog, onTap: () => onSelectDog(dog.id)),
                       ),
                     ))
                 .toList(),
@@ -79,7 +80,8 @@ class _DogCard extends StatelessWidget {
             Text(dog.name, style: AppText.displaySmall),
             const SizedBox(height: 2),
             Text(
-              AppLocalizations.of(context)!.dogInfoLine(dog.color, dog.ageInYears(2026)),
+              AppLocalizations.of(context)!
+                  .dogInfoLine(dog.color, dog.ageInYears(2026)),
               style: AppText.caption,
             ),
             const SizedBox(height: 6),
@@ -132,21 +134,26 @@ class _UpcomingTimeline extends StatelessWidget {
                 ),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.ink.withValues(alpha: 0.08)),
+                      border: Border.all(
+                          color: AppColors.ink.withValues(alpha: 0.08)),
                     ),
                     child: Row(
                       children: [
-                        Icon(item.type.icon, size: 18, color: AppColors.inkSoft),
+                        Icon(item.type.icon,
+                            size: 18, color: AppColors.inkSoft),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(item.label, style: AppText.body, overflow: TextOverflow.ellipsis),
+                              Text(item.label,
+                                  style: AppText.body,
+                                  overflow: TextOverflow.ellipsis),
                               Text(dog.name, style: AppText.caption),
                             ],
                           ),

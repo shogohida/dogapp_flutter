@@ -43,7 +43,8 @@ class DogsRepository extends ChangeNotifier {
     required Uint8List videoBytes,
     required String filename,
   }) {
-    return _client.runGaitCheck(dogId: dogId, videoBytes: videoBytes, filename: filename);
+    return _client.runGaitCheck(
+        dogId: dogId, videoBytes: videoBytes, filename: filename);
   }
 
   Future<void> addRecord({

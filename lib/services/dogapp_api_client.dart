@@ -59,7 +59,8 @@ abstract class DogappApiClient {
 /// 変更が必要な場合はこのファイルと lib/models/dog.dart の
 /// fromJson/toJson だけを直せばよいよう分離している。
 class HttpDogappApiClient implements DogappApiClient {
-  HttpDogappApiClient({http.Client? httpClient, String? baseUrl, Duration? timeout})
+  HttpDogappApiClient(
+      {http.Client? httpClient, String? baseUrl, Duration? timeout})
       : _client = httpClient ?? http.Client(),
         _baseUrl = baseUrl ?? ApiConfig.baseUrl,
         _timeout = timeout ?? const Duration(seconds: 10);
@@ -114,7 +115,8 @@ class HttpDogappApiClient implements DogappApiClient {
     // 動画はBase64+JSONだとリクエストが肥大化しやすいため、写真とは違い
     // multipart/form-dataでアップロードする。
     final request = http.MultipartRequest('POST', uri)
-      ..files.add(http.MultipartFile.fromBytes('video', videoBytes, filename: filename));
+      ..files.add(http.MultipartFile.fromBytes('video', videoBytes,
+          filename: filename));
     final streamedResponse = await _client.send(request).timeout(_timeout * 3);
     final res = await http.Response.fromStream(streamedResponse);
     _checkStatus(res);
@@ -149,7 +151,9 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client.get(uri).timeout(_timeout);
     _checkStatus(res);
     final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
-    return list.map((e) => WalkRoute.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => WalkRoute.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   @override
@@ -174,7 +178,8 @@ class HttpDogappApiClient implements DogappApiClient {
         )
         .timeout(_timeout);
     _checkStatus(res);
-    return WalkRoute.fromJson(jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
+    return WalkRoute.fromJson(
+        jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
   }
 
   void _checkStatus(http.Response res) {

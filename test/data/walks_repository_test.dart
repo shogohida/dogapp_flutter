@@ -13,7 +13,8 @@ class _UnusedApiClient implements DogappApiClient {
   Future<List<Dog>> fetchDogs(String ownerId) => throw UnimplementedError();
 
   @override
-  Future<AICheckResult> runAiCheck({required String dogId, required Uint8List imageBytes}) =>
+  Future<AICheckResult> runAiCheck(
+          {required String dogId, required Uint8List imageBytes}) =>
       throw UnimplementedError();
 
   @override
@@ -33,7 +34,8 @@ class _UnusedApiClient implements DogappApiClient {
       throw UnimplementedError();
 
   @override
-  Future<List<WalkRoute>> fetchWalks(String dogId) => throw UnimplementedError();
+  Future<List<WalkRoute>> fetchWalks(String dogId) =>
+      throw UnimplementedError();
 
   @override
   Future<WalkRoute> createWalk({
@@ -46,7 +48,11 @@ class _UnusedApiClient implements DogappApiClient {
       throw UnimplementedError();
 }
 
-WalkRoute _walk({required double lat, required double lng, required double distanceMeters, int daysAgo = 0}) {
+WalkRoute _walk(
+    {required double lat,
+    required double lng,
+    required double distanceMeters,
+    int daysAgo = 0}) {
   return WalkRoute(
     id: '$lat,$lng,$daysAgo',
     dogId: 'leo',

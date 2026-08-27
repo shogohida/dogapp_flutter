@@ -32,8 +32,9 @@ class WalksRepository extends ChangeNotifier {
 
   List<GeoPoint> get currentPoints => List.unmodifiable(_currentPoints);
   double get currentDistanceMeters => _currentDistanceMeters;
-  Duration get currentDuration =>
-      _startedAt == null ? Duration.zero : DateTime.now().difference(_startedAt!);
+  Duration get currentDuration => _startedAt == null
+      ? Duration.zero
+      : DateTime.now().difference(_startedAt!);
 
   Future<void> loadWalks(String dogId) async {
     isLoading = true;
@@ -72,7 +73,8 @@ class WalksRepository extends ChangeNotifier {
       );
       if (_currentPoints.isNotEmpty) {
         final last = _currentPoints.last;
-        _currentDistanceMeters += haversineMeters(last.lat, last.lng, point.lat, point.lng);
+        _currentDistanceMeters +=
+            haversineMeters(last.lat, last.lng, point.lat, point.lng);
       }
       _currentPoints.add(point);
       notifyListeners();
@@ -126,13 +128,16 @@ class WalksRepository extends ChangeNotifier {
     for (final walk in walks) {
       if (walk.points.isEmpty) continue;
       final start = walk.points.first;
-      final key = '${start.lat.toStringAsFixed(3)},${start.lng.toStringAsFixed(3)}';
+      final key =
+          '${start.lat.toStringAsFixed(3)},${start.lng.toStringAsFixed(3)}';
       groups.putIfAbsent(key, () => []).add(walk);
     }
 
     final courses = groups.values.map((group) {
-      final sorted = [...group]..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-      final totalDistance = group.fold<double>(0, (sum, w) => sum + w.distanceMeters);
+      final sorted = [...group]
+        ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      final totalDistance =
+          group.fold<double>(0, (sum, w) => sum + w.distanceMeters);
       return RecommendedCourse(
         sample: sorted.first,
         walkCount: group.length,

@@ -22,9 +22,24 @@ final _dogs = [
       {'month': '8月', 'kg': 25.2},
     ],
     'records': [
-      {'id': '1', 'type': 'vaccine', 'label': '混合ワクチン接種', 'date': '2026-07-12T00:00:00Z'},
-      {'id': '2', 'type': 'grooming', 'label': 'トリミング(サマーカット)', 'date': '2026-08-02T00:00:00Z'},
-      {'id': '3', 'type': 'vet', 'label': '定期健診', 'date': '2026-08-15T00:00:00Z'},
+      {
+        'id': '1',
+        'type': 'vaccine',
+        'label': '混合ワクチン接種',
+        'date': '2026-07-12T00:00:00Z'
+      },
+      {
+        'id': '2',
+        'type': 'grooming',
+        'label': 'トリミング(サマーカット)',
+        'date': '2026-08-02T00:00:00Z'
+      },
+      {
+        'id': '3',
+        'type': 'vet',
+        'label': '定期健診',
+        'date': '2026-08-15T00:00:00Z'
+      },
     ],
   },
   {
@@ -42,8 +57,18 @@ final _dogs = [
       {'month': '8月', 'kg': 23.0},
     ],
     'records': [
-      {'id': '1', 'type': 'grooming', 'label': 'トリミング(全身カット)', 'date': '2026-08-05T00:00:00Z'},
-      {'id': '2', 'type': 'vaccine', 'label': '狂犬病予防接種', 'date': '2026-06-20T00:00:00Z'},
+      {
+        'id': '1',
+        'type': 'grooming',
+        'label': 'トリミング(全身カット)',
+        'date': '2026-08-05T00:00:00Z'
+      },
+      {
+        'id': '2',
+        'type': 'vaccine',
+        'label': '狂犬病予防接種',
+        'date': '2026-06-20T00:00:00Z'
+      },
     ],
   },
 ];
@@ -119,14 +144,20 @@ Future<void> _handle(HttpRequest req) async {
   req.response.headers.contentType = ContentType.json;
 
   // GET /owners/{ownerId}/dogs
-  if (req.method == 'GET' && segments.length == 3 && segments[0] == 'owners' && segments[2] == 'dogs') {
+  if (req.method == 'GET' &&
+      segments.length == 3 &&
+      segments[0] == 'owners' &&
+      segments[2] == 'dogs') {
     req.response.write(jsonEncode(_dogs));
     await req.response.close();
     return;
   }
 
   // POST /dogs/{dogId}/ai-check
-  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'ai-check') {
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'ai-check') {
     await utf8.decoder.bind(req).join(); // ボディは読み捨てる(モックのため)
     await Future.delayed(const Duration(milliseconds: 800));
     final result = _aiResults[Random().nextInt(_aiResults.length)];
@@ -136,7 +167,10 @@ Future<void> _handle(HttpRequest req) async {
   }
 
   // POST /dogs/{dogId}/gait-check (multipart/form-data、動画ファイル1つ)
-  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'gait-check') {
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'gait-check') {
     await req.drain(); // 動画バイト列はUTF-8ではないのでdecodeせず読み捨てる
     await Future.delayed(const Duration(milliseconds: 1000));
     final result = _gaitResults[Random().nextInt(_gaitResults.length)];
@@ -146,8 +180,12 @@ Future<void> _handle(HttpRequest req) async {
   }
 
   // POST /dogs/{dogId}/records
-  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'records') {
-    final body = jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'records') {
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
     final record = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'type': body['type'],
@@ -160,7 +198,10 @@ Future<void> _handle(HttpRequest req) async {
   }
 
   // GET /dogs/{dogId}/walks
-  if (req.method == 'GET' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'walks') {
+  if (req.method == 'GET' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'walks') {
     final dogId = segments[1];
     req.response.write(jsonEncode(_walks[dogId] ?? []));
     await req.response.close();
@@ -168,9 +209,13 @@ Future<void> _handle(HttpRequest req) async {
   }
 
   // POST /dogs/{dogId}/walks
-  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'walks') {
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'walks') {
     final dogId = segments[1];
-    final body = jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
     final walk = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'dogId': dogId,

@@ -3,7 +3,8 @@ class GeoPoint {
   final double lng;
   final DateTime timestamp;
 
-  const GeoPoint({required this.lat, required this.lng, required this.timestamp});
+  const GeoPoint(
+      {required this.lat, required this.lng, required this.timestamp});
 
   factory GeoPoint.fromJson(Map<String, dynamic> json) => GeoPoint(
         lat: (json['lat'] as num).toDouble(),

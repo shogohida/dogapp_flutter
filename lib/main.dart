@@ -40,7 +40,8 @@ class DogHealthApp extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       home: MainShell(
         repository: DogsRepository(client: apiClient),
-        walksRepository: WalksRepository(client: apiClient, locationService: locationService),
+        walksRepository: WalksRepository(
+            client: apiClient, locationService: locationService),
         pickImage: pickImage,
         pickVideo: pickVideo,
       ),

@@ -101,6 +101,16 @@ class AppLocalizationsEn extends AppLocalizations {
       '※ This is a simple AI-based check, not a diagnosis. Please see a vet for any concerning symptoms.';
 
   @override
+  String healthCheckRecordLabel(String title) {
+    return 'Health check: $title';
+  }
+
+  @override
+  String gaitCheckRecordLabel(String title) {
+    return 'Gait check: $title';
+  }
+
+  @override
   String get healthCheckModePhoto => 'Photo';
 
   @override

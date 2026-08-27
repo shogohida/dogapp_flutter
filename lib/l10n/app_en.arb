@@ -34,6 +34,8 @@
   "tryAgain": "Try again",
   "checkAgain": "Check again",
   "aiCheckDisclaimer": "※ This is a simple AI-based check, not a diagnosis. Please see a vet for any concerning symptoms.",
+  "healthCheckRecordLabel": "Health check: {title}",
+  "gaitCheckRecordLabel": "Gait check: {title}",
 
   "healthCheckModePhoto": "Photo",
   "healthCheckModeVideo": "Video (gait)",

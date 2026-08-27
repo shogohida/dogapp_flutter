@@ -101,6 +101,16 @@ class AppLocalizationsJa extends AppLocalizations {
       '※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。';
 
   @override
+  String healthCheckRecordLabel(String title) {
+    return '健康チェック: $title';
+  }
+
+  @override
+  String gaitCheckRecordLabel(String title) {
+    return '歩行チェック: $title';
+  }
+
+  @override
   String get healthCheckModePhoto => '写真';
 
   @override

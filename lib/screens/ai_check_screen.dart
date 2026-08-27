@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -148,12 +149,34 @@ class _AICheckScreenState extends State<AICheckScreen> {
         _result = result;
         _step = _CheckStep.result;
       });
+      unawaited(_saveAsRecord(result));
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _errorMessage = '$e';
         _step = _CheckStep.error;
       });
+    }
+  }
+
+  /// 判定結果を犬の記録として自動保存する。表示中の結果はこの成否に
+  /// 関わらず出したままにし、失敗時だけ控えめに知らせる。
+  Future<void> _saveAsRecord(AICheckResult result) async {
+    final l10n = AppLocalizations.of(context)!;
+    final label = _media == _CheckMedia.photo
+        ? l10n.healthCheckRecordLabel(result.title)
+        : l10n.gaitCheckRecordLabel(result.title);
+    try {
+      await widget.repository.addRecord(
+        dogId: _selectedDogId,
+        type: RecordType.aiCheck,
+        label: label,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.saveFailed('$e'))),
+      );
     }
   }
 

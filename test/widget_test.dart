@@ -113,6 +113,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('もう一度チェックする'), findsOneWidget);
+
+    // 判定結果は犬の記録としても自動保存される。
+    await tester.tap(find.text('記録').last);
+    await tester.pumpAndSettle();
+    expect(find.text('健康チェック: 特に気になる所見はありません'), findsOneWidget);
   });
 
   testWidgets('健康チェックタブで動画モードに切り替えて撮影すると解析中→結果の順に遷移する', (tester) async {
@@ -142,6 +147,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('もう一度チェックする'), findsOneWidget);
+
+    // 歩行チェックの結果も、写真判定と見分けられるラベルで記録に保存される。
+    await tester.tap(find.text('記録').last);
+    await tester.pumpAndSettle();
+    expect(find.text('歩行チェック: 特に気になる所見はありません'), findsOneWidget);
   });
 
   testWidgets('記録タブで追加ボタンをタップするとモーダルが開き、2つのドロップダウンが表示される', (tester) async {

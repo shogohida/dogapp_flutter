@@ -266,6 +266,18 @@ abstract class AppLocalizations {
   /// **'※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。'**
   String get aiCheckDisclaimer;
 
+  /// No description provided for @healthCheckRecordLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'健康チェック: {title}'**
+  String healthCheckRecordLabel(String title);
+
+  /// No description provided for @gaitCheckRecordLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'歩行チェック: {title}'**
+  String gaitCheckRecordLabel(String title);
+
   /// No description provided for @healthCheckModePhoto.
   ///
   /// In ja, this message translates to:

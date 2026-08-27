@@ -50,6 +50,14 @@
   "tryAgain": "もう一度試す",
   "checkAgain": "もう一度チェックする",
   "aiCheckDisclaimer": "※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。",
+  "healthCheckRecordLabel": "健康チェック: {title}",
+  "@healthCheckRecordLabel": {
+    "placeholders": {"title": {"type": "String"}}
+  },
+  "gaitCheckRecordLabel": "歩行チェック: {title}",
+  "@gaitCheckRecordLabel": {
+    "placeholders": {"title": {"type": "String"}}
+  },
 
   "healthCheckModePhoto": "写真",
   "healthCheckModeVideo": "動画(歩行)",

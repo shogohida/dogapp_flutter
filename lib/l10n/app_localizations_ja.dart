@@ -101,6 +101,28 @@ class AppLocalizationsJa extends AppLocalizations {
       '※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。';
 
   @override
+  String get healthCheckModePhoto => '写真';
+
+  @override
+  String get healthCheckModeVideo => '動画(歩行)';
+
+  @override
+  String get gaitCheckDescription =>
+      '歩き方に違和感がないか、短い動画から簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。';
+
+  @override
+  String get takeOrChooseVideo => '動画を撮る・選ぶ';
+
+  @override
+  String get tapToUploadVideo => 'タップして動画をアップロード';
+
+  @override
+  String get recordVideo => '動画を撮影';
+
+  @override
+  String get chooseVideoFromGallery => 'ギャラリーから動画を選択';
+
+  @override
   String get addRecord => '記録を追加';
 
   @override

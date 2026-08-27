@@ -266,6 +266,48 @@ abstract class AppLocalizations {
   /// **'※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。'**
   String get aiCheckDisclaimer;
 
+  /// No description provided for @healthCheckModePhoto.
+  ///
+  /// In ja, this message translates to:
+  /// **'写真'**
+  String get healthCheckModePhoto;
+
+  /// No description provided for @healthCheckModeVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画(歩行)'**
+  String get healthCheckModeVideo;
+
+  /// No description provided for @gaitCheckDescription.
+  ///
+  /// In ja, this message translates to:
+  /// **'歩き方に違和感がないか、短い動画から簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。'**
+  String get gaitCheckDescription;
+
+  /// No description provided for @takeOrChooseVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を撮る・選ぶ'**
+  String get takeOrChooseVideo;
+
+  /// No description provided for @tapToUploadVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'タップして動画をアップロード'**
+  String get tapToUploadVideo;
+
+  /// No description provided for @recordVideo.
+  ///
+  /// In ja, this message translates to:
+  /// **'動画を撮影'**
+  String get recordVideo;
+
+  /// No description provided for @chooseVideoFromGallery.
+  ///
+  /// In ja, this message translates to:
+  /// **'ギャラリーから動画を選択'**
+  String get chooseVideoFromGallery;
+
   /// No description provided for @addRecord.
   ///
   /// In ja, this message translates to:

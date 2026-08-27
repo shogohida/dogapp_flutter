@@ -23,6 +23,16 @@ class FakeDogappApiClient implements DogappApiClient {
   }
 
   @override
+  Future<AICheckResult> runGaitCheck({
+    required String dogId,
+    required Uint8List videoBytes,
+    required String filename,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    return mockAIResults.first;
+  }
+
+  @override
   Future<HealthRecord> createRecord({
     required String dogId,
     required RecordType type,

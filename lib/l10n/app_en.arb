@@ -35,6 +35,14 @@
   "checkAgain": "Check again",
   "aiCheckDisclaimer": "※ This is a simple AI-based check, not a diagnosis. Please see a vet for any concerning symptoms.",
 
+  "healthCheckModePhoto": "Photo",
+  "healthCheckModeVideo": "Video (gait)",
+  "gaitCheckDescription": "Get a quick check on your dog's gait from a short video. This isn't a diagnosis — just a guide for whether to see a vet.",
+  "takeOrChooseVideo": "Take or choose a video",
+  "tapToUploadVideo": "Tap to upload a video",
+  "recordVideo": "Record a video",
+  "chooseVideoFromGallery": "Choose video from gallery",
+
   "addRecord": "Add Record",
   "noteOptional": "Note (optional)",
   "save": "Save",

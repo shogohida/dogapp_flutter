@@ -37,6 +37,15 @@ class _StubApiClient implements DogappApiClient {
   }
 
   @override
+  Future<AICheckResult> runGaitCheck({
+    required String dogId,
+    required Uint8List videoBytes,
+    required String filename,
+  }) async {
+    return const AICheckResult(level: AICheckLevel.normal, title: 't', detail: 'd');
+  }
+
+  @override
   Future<HealthRecord> createRecord({
     required String dogId,
     required RecordType type,

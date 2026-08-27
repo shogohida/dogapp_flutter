@@ -27,6 +27,13 @@ abstract class DogappApiClient {
     required Uint8List imageBytes,
   });
 
+  /// 短い動画から歩き方の異常(引きずり・跛行など)を簡易チェックする。
+  Future<AICheckResult> runGaitCheck({
+    required String dogId,
+    required Uint8List videoBytes,
+    required String filename,
+  });
+
   Future<HealthRecord> createRecord({
     required String dogId,
     required RecordType type,
@@ -91,6 +98,25 @@ class HttpDogappApiClient implements DogappApiClient {
         // 画像解析はClaude API呼び出しを挟むぶん時間がかかりうるため、
         // 他のエンドポイントより長めのタイムアウトにする。
         .timeout(_timeout * 3);
+    _checkStatus(res);
+    return AICheckResult.fromJson(
+      jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,
+    );
+  }
+
+  @override
+  Future<AICheckResult> runGaitCheck({
+    required String dogId,
+    required Uint8List videoBytes,
+    required String filename,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId/gait-check');
+    // 動画はBase64+JSONだとリクエストが肥大化しやすいため、写真とは違い
+    // multipart/form-dataでアップロードする。
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(http.MultipartFile.fromBytes('video', videoBytes, filename: filename));
+    final streamedResponse = await _client.send(request).timeout(_timeout * 3);
+    final res = await http.Response.fromStream(streamedResponse);
     _checkStatus(res);
     return AICheckResult.fromJson(
       jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,

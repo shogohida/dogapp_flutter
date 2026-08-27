@@ -7,6 +7,7 @@ import '../models/dog.dart';
 import '../theme/app_theme.dart';
 
 enum _CheckStep { idle, analyzing, result, error }
+enum _CheckMedia { photo, video }
 
 /// 画像選択の実処理。「撮る・選ぶ」の両方に対応するため、まずカメラ/ギャラリーを
 /// 選ばせてからImagePickerを呼ぶ。テストではネイティブのプラットフォームチャンネルが
@@ -44,16 +45,52 @@ Future<Uint8List?> pickCheckImage(BuildContext context) async {
   return picked.readAsBytes();
 }
 
+/// 動画選択の実処理。歩行チェックは短い動画で十分なため15秒に制限している。
+/// バイト列だけでなく元のファイル名(拡張子)もmultipartアップロードに必要なため、
+/// [XFile]をそのまま返す。
+Future<XFile?> pickCheckVideo(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
+  final source = await showModalBottomSheet<ImageSource>(
+    context: context,
+    backgroundColor: AppColors.paper,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.videocam_outlined, color: AppColors.ink),
+            title: Text(l10n.recordVideo, style: AppText.body),
+            onTap: () => Navigator.of(context).pop(ImageSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.video_library_outlined, color: AppColors.ink),
+            title: Text(l10n.chooseVideoFromGallery, style: AppText.body),
+            onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  if (source == null) return null;
+  return ImagePicker().pickVideo(source: source, maxDuration: const Duration(seconds: 15));
+}
+
 class AICheckScreen extends StatefulWidget {
   final List<Dog> dogs;
   final DogsRepository repository;
   final Future<Uint8List?> Function(BuildContext context) pickImage;
+  final Future<XFile?> Function(BuildContext context) pickVideo;
 
   const AICheckScreen({
     super.key,
     required this.dogs,
     required this.repository,
     this.pickImage = pickCheckImage,
+    this.pickVideo = pickCheckVideo,
   });
 
   @override
@@ -62,19 +99,43 @@ class AICheckScreen extends StatefulWidget {
 
 class _AICheckScreenState extends State<AICheckScreen> {
   _CheckStep _step = _CheckStep.idle;
+  _CheckMedia _media = _CheckMedia.photo;
   AICheckResult? _result;
   String? _errorMessage;
   late String _selectedDogId = widget.dogs.first.id;
 
-  /// 写真撮影→解析のフロー。
-  /// 選んだ画像をBase64化し、dogapp-apiのPOST /dogs/{dogId}/ai-checkへ送信する。
+  void _selectMedia(_CheckMedia media) {
+    setState(() {
+      _media = media;
+      _step = _CheckStep.idle;
+      _result = null;
+      _errorMessage = null;
+    });
+  }
+
+  /// 撮影/選択→解析のフロー。
+  /// 写真はBase64化してPOST /dogs/{dogId}/ai-checkへ、動画は
+  /// multipart/form-dataでPOST /dogs/{dogId}/gait-checkへ送信する。
   Future<void> _runCheck() async {
-    final bytes = await widget.pickImage(context);
-    if (bytes == null) return;
+    Uint8List? photoBytes;
+    XFile? video;
+    if (_media == _CheckMedia.photo) {
+      photoBytes = await widget.pickImage(context);
+      if (photoBytes == null) return;
+    } else {
+      video = await widget.pickVideo(context);
+      if (video == null) return;
+    }
     if (!mounted) return;
     setState(() => _step = _CheckStep.analyzing);
     try {
-      final result = await widget.repository.runAiCheck(dogId: _selectedDogId, imageBytes: bytes);
+      final result = _media == _CheckMedia.photo
+          ? await widget.repository.runAiCheck(dogId: _selectedDogId, imageBytes: photoBytes!)
+          : await widget.repository.runGaitCheck(
+              dogId: _selectedDogId,
+              videoBytes: await video!.readAsBytes(),
+              filename: video.name,
+            );
       if (!mounted) return;
       setState(() {
         _result = result;
@@ -100,13 +161,39 @@ class _AICheckScreenState extends State<AICheckScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final canInteract = _step == _CheckStep.idle;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
         Text(l10n.healthCheckTitle, style: AppText.display),
         const SizedBox(height: 6),
-        Text(l10n.healthCheckDescription, style: AppText.bodySoft),
-        const SizedBox(height: 18),
+        Text(
+          _media == _CheckMedia.photo ? l10n.healthCheckDescription : l10n.gaitCheckDescription,
+          style: AppText.bodySoft,
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _MediaModeButton(
+                label: l10n.healthCheckModePhoto,
+                icon: Icons.photo_camera_outlined,
+                selected: _media == _CheckMedia.photo,
+                onTap: canInteract ? () => _selectMedia(_CheckMedia.photo) : null,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _MediaModeButton(
+                label: l10n.healthCheckModeVideo,
+                icon: Icons.videocam_outlined,
+                selected: _media == _CheckMedia.video,
+                onTap: canInteract ? () => _selectMedia(_CheckMedia.video) : null,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
         Row(
           children: widget.dogs.map((dog) {
             final selected = dog.id == _selectedDogId;
@@ -138,7 +225,7 @@ class _AICheckScreenState extends State<AICheckScreen> {
   Widget _buildStepContent() {
     switch (_step) {
       case _CheckStep.idle:
-        return _IdleCard(onTap: _runCheck);
+        return _IdleCard(onTap: _runCheck, media: _media);
       case _CheckStep.analyzing:
         return _AnalyzingCard(
           accent: widget.dogs.firstWhere((d) => d.id == _selectedDogId).accent,
@@ -151,14 +238,45 @@ class _AICheckScreenState extends State<AICheckScreen> {
   }
 }
 
+class _MediaModeButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  const _MediaModeButton({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: selected ? AppColors.ink.withValues(alpha: 0.06) : Colors.white,
+        side: BorderSide(color: selected ? AppColors.ink : AppColors.ink.withValues(alpha: 0.12)),
+        shape: const StadiumBorder(),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+      ),
+      icon: Icon(icon, size: 16, color: AppColors.ink),
+      label: Text(label, style: AppText.body),
+    );
+  }
+}
+
 class _IdleCard extends StatelessWidget {
   final VoidCallback onTap;
+  final _CheckMedia media;
 
-  const _IdleCard({required this.onTap});
+  const _IdleCard({required this.onTap, required this.media});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isVideo = media == _CheckMedia.video;
     return AspectRatio(
       aspectRatio: 1,
       child: InkWell(
@@ -175,17 +293,21 @@ class _IdleCard extends StatelessWidget {
                   color: AppColors.ink.withValues(alpha: 0.04),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.camera_alt_outlined, color: AppColors.ink, size: 26),
+                child: Icon(
+                  isVideo ? Icons.videocam_outlined : Icons.camera_alt_outlined,
+                  color: AppColors.ink,
+                  size: 26,
+                ),
               ),
               const SizedBox(height: 12),
-              Text(l10n.takeOrChoosePhoto, style: AppText.body),
+              Text(isVideo ? l10n.takeOrChooseVideo : l10n.takeOrChoosePhoto, style: AppText.body),
               const SizedBox(height: 4),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.upload_outlined, size: 12, color: AppColors.inkSoft),
                   const SizedBox(width: 4),
-                  Text(l10n.tapToUpload, style: AppText.caption),
+                  Text(isVideo ? l10n.tapToUploadVideo : l10n.tapToUpload, style: AppText.caption),
                 ],
               ),
             ],

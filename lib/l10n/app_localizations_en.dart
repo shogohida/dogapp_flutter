@@ -101,6 +101,28 @@ class AppLocalizationsEn extends AppLocalizations {
       '※ This is a simple AI-based check, not a diagnosis. Please see a vet for any concerning symptoms.';
 
   @override
+  String get healthCheckModePhoto => 'Photo';
+
+  @override
+  String get healthCheckModeVideo => 'Video (gait)';
+
+  @override
+  String get gaitCheckDescription =>
+      'Get a quick check on your dog\'s gait from a short video. This isn\'t a diagnosis — just a guide for whether to see a vet.';
+
+  @override
+  String get takeOrChooseVideo => 'Take or choose a video';
+
+  @override
+  String get tapToUploadVideo => 'Tap to upload a video';
+
+  @override
+  String get recordVideo => 'Record a video';
+
+  @override
+  String get chooseVideoFromGallery => 'Choose video from gallery';
+
+  @override
   String get addRecord => 'Add Record';
 
   @override

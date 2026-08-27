@@ -51,6 +51,14 @@
   "checkAgain": "もう一度チェックする",
   "aiCheckDisclaimer": "※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。",
 
+  "healthCheckModePhoto": "写真",
+  "healthCheckModeVideo": "動画(歩行)",
+  "gaitCheckDescription": "歩き方に違和感がないか、短い動画から簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "takeOrChooseVideo": "動画を撮る・選ぶ",
+  "tapToUploadVideo": "タップして動画をアップロード",
+  "recordVideo": "動画を撮影",
+  "chooseVideoFromGallery": "ギャラリーから動画を選択",
+
   "addRecord": "記録を追加",
   "noteOptional": "メモ(任意)",
   "save": "保存する",

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:dogapp/main.dart';
 import 'package:dogapp/screens/home_screen.dart';
@@ -14,6 +15,7 @@ import 'fakes/fake_dogapp_api_client.dart';
 Future<void> _pumpApp(
   WidgetTester tester, {
   Future<Uint8List?> Function(BuildContext context)? pickImage,
+  Future<XFile?> Function(BuildContext context)? pickVideo,
 }) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1.0;
@@ -33,6 +35,7 @@ Future<void> _pumpApp(
   await tester.pumpWidget(DogHealthApp(
     apiClient: FakeDogappApiClient(),
     pickImage: pickImage,
+    pickVideo: pickVideo,
   ));
   await tester.pump(); // loadDogs()の完了を待つ
 }
@@ -102,6 +105,35 @@ void main() {
 
     await tester.tap(find.text('写真を撮る・選ぶ'));
     await tester.pump(); // pickImage()の完了とanalyzing状態への遷移
+
+    expect(find.text('解析しています…'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('もう一度チェックする'), findsOneWidget);
+  });
+
+  testWidgets('健康チェックタブで動画モードに切り替えて撮影すると解析中→結果の順に遷移する', (tester) async {
+    // ネイティブの動画ピッカーはテスト環境で動かないため、ダミーの動画XFileを返す
+    await _pumpApp(
+      tester,
+      pickVideo: (context) async => XFile.fromData(
+        Uint8List.fromList([0]),
+        name: 'walk.mp4',
+        mimeType: 'video/mp4',
+      ),
+    );
+
+    await tester.tap(find.text('健康チェック').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('動画(歩行)'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('動画を撮る・選ぶ'), findsOneWidget);
+
+    await tester.tap(find.text('動画を撮る・選ぶ'));
+    await tester.pump(); // pickVideo()の完了とanalyzing状態への遷移
 
     expect(find.text('解析しています…'), findsOneWidget);
 

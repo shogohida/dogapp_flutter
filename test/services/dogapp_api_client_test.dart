@@ -80,6 +80,31 @@ void main() {
     });
   });
 
+  group('HttpDogappApiClient.runGaitCheck', () {
+    test('動画をmultipart/form-dataでPOSTし、AICheckResultを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/dogs/leo/gait-check');
+        expect(request.headers['content-type'], contains('multipart/form-data'));
+        // multipartのボディはUTF-8として不正な可能性があるためallowMalformedで読む。
+        final rawBody = utf8.decode(request.bodyBytes, allowMalformed: true);
+        expect(rawBody, contains('walk.mp4'));
+        expect(rawBody, contains('FAKE_VIDEO_BYTES'));
+        return _jsonResponse({'level': 'concern', 'title': '足を引きずる動き', 'detail': '動物病院へ'});
+      });
+      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final result = await client.runGaitCheck(
+        dogId: 'leo',
+        videoBytes: Uint8List.fromList(utf8.encode('FAKE_VIDEO_BYTES')),
+        filename: 'walk.mp4',
+      );
+
+      expect(result.level, AICheckLevel.concern);
+      expect(result.title, '足を引きずる動き');
+    });
+  });
+
   group('HttpDogappApiClient.createRecord', () {
     test('type/labelをPOSTし、作成されたHealthRecordを返す', () async {
       final mock = MockClient((request) async {

@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../data/dogs_repository.dart';
 import '../data/walks_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -14,14 +15,16 @@ class MainShell extends StatefulWidget {
   final DogsRepository repository;
   final WalksRepository walksRepository;
 
-  /// テストからAICheckScreenの画像選択をフェイクに差し替えるために公開している。
+  /// テストからAICheckScreenの画像/動画選択をフェイクに差し替えるために公開している。
   final Future<Uint8List?> Function(BuildContext context)? pickImage;
+  final Future<XFile?> Function(BuildContext context)? pickVideo;
 
   const MainShell({
     super.key,
     required this.repository,
     required this.walksRepository,
     this.pickImage,
+    this.pickVideo,
   });
 
   @override
@@ -87,6 +90,7 @@ class _MainShellState extends State<MainShell> {
                   dogs: repo.dogs,
                   repository: repo,
                   pickImage: widget.pickImage ?? pickCheckImage,
+                  pickVideo: widget.pickVideo ?? pickCheckVideo,
                 ),
                 RecordsScreen(dogs: repo.dogs, repository: repo),
                 WalkScreen(dogs: repo.dogs, repository: widget.walksRepository),

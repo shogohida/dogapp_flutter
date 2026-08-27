@@ -38,6 +38,14 @@ class DogsRepository extends ChangeNotifier {
     return _client.runAiCheck(dogId: dogId, imageBytes: imageBytes);
   }
 
+  Future<AICheckResult> runGaitCheck({
+    required String dogId,
+    required Uint8List videoBytes,
+    required String filename,
+  }) {
+    return _client.runGaitCheck(dogId: dogId, videoBytes: videoBytes, filename: filename);
+  }
+
   Future<void> addRecord({
     required String dogId,
     required RecordType type,

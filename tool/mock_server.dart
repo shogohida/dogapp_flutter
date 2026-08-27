@@ -69,6 +69,24 @@ final _aiResults = [
   },
 ];
 
+final _gaitResults = [
+  {
+    'level': 'normal',
+    'title': '歩き方に気になる点はありません',
+    'detail': '左右のバランスよく歩けており、足を引きずるような様子は見られません。',
+  },
+  {
+    'level': 'watch',
+    'title': 'わずかな歩様の左右差が見られます',
+    'detail': '片側の足の着地がやや弱いように見えます。運動後に様子を見て、続くようなら相談してください。',
+  },
+  {
+    'level': 'concern',
+    'title': '足を引きずるような動きが見られます',
+    'detail': '歩行時に片足をかばうような動きが見られます。関節や足裏の痛みの可能性があるため、早めに動物病院での診察をおすすめします。',
+  },
+];
+
 void main() async {
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
   print('mock dogapp-api listening on http://localhost:8080');
@@ -112,6 +130,16 @@ Future<void> _handle(HttpRequest req) async {
     await utf8.decoder.bind(req).join(); // ボディは読み捨てる(モックのため)
     await Future.delayed(const Duration(milliseconds: 800));
     final result = _aiResults[Random().nextInt(_aiResults.length)];
+    req.response.write(jsonEncode(result));
+    await req.response.close();
+    return;
+  }
+
+  // POST /dogs/{dogId}/gait-check (multipart/form-data、動画ファイル1つ)
+  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'gait-check') {
+    await req.drain(); // 動画バイト列はUTF-8ではないのでdecodeせず読み捨てる
+    await Future.delayed(const Duration(milliseconds: 1000));
+    final result = _gaitResults[Random().nextInt(_gaitResults.length)];
     req.response.write(jsonEncode(result));
     await req.response.close();
     return;

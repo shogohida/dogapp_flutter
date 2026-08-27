@@ -71,6 +71,7 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com
 |---|---|---|
 | GET | `/owners/{ownerId}/dogs` | 犬一覧の取得 |
 | POST | `/dogs/{dogId}/ai-check` | 写真(Base64)を送りAI健康チェック結果を取得 |
+| POST | `/dogs/{dogId}/gait-check` | 短い動画(multipart/form-data)を送り歩行の異常を判定 |
 | POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加 |
 | GET | `/dogs/{dogId}/walks` | 散歩記録の一覧取得 |
 | POST | `/dogs/{dogId}/walks` | GPSで記録した散歩ルートの保存 |
@@ -87,6 +88,16 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com
   簡易ロジック(`WalksRepository.recommendedCourses()`)
 
 Web版のブラウザで動かす場合、位置情報の利用にはブラウザ側の許可が必要。
+
+## 動画による歩行チェック
+
+「健康チェック」タブで写真/動画の2モードを切り替えられる。動画モードでは
+足を引きずっていないかなど歩き方の異常を判定する。
+
+- 動画は最大15秒(`ImagePicker.pickVideo(maxDuration: ...)`)に制限
+- 写真(Base64+JSON)とは異なり、動画はサイズが大きくなりやすいため
+  `http.MultipartRequest`で`multipart/form-data`アップロードする
+- レスポンスの形は写真判定と同じ`AICheckResult`(level/title/detail)を再利用
 
 ## ローカライズ(日本語/英語)
 

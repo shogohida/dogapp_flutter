@@ -13,7 +13,7 @@ import 'fakes/fake_dogapp_api_client.dart';
 /// 当たらなくなる)。実機に近いサイズに変更してから各テストを実行する。
 Future<void> _pumpApp(
   WidgetTester tester, {
-  Future<Uint8List?> Function()? pickImage,
+  Future<Uint8List?> Function(BuildContext context)? pickImage,
 }) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1.0;
@@ -83,7 +83,7 @@ void main() {
 
   testWidgets('健康チェックタブで写真ボタンをタップすると解析中→結果の順に遷移する', (tester) async {
     // ネイティブの画像ピッカーはテスト環境で動かないため、ダミーの画像バイト列を返す
-    await _pumpApp(tester, pickImage: () async => Uint8List.fromList([0]));
+    await _pumpApp(tester, pickImage: (context) async => Uint8List.fromList([0]));
 
     await tester.tap(find.text('健康チェック').last);
     await tester.pumpAndSettle();

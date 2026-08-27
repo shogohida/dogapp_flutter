@@ -13,7 +13,7 @@ class DogHealthApp extends StatelessWidget {
   /// テストからフェイクのAPIクライアント/画像選択を差し込めるようにしている
   /// (実ネットワークやネイティブプラグインに依存しないウィジェットテストのため)。
   final DogappApiClient? apiClient;
-  final Future<Uint8List?> Function()? pickImage;
+  final Future<Uint8List?> Function(BuildContext context)? pickImage;
 
   const DogHealthApp({super.key, this.apiClient, this.pickImage});
 

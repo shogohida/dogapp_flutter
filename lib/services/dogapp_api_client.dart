@@ -41,17 +41,19 @@ abstract class DogappApiClient {
 /// 変更が必要な場合はこのファイルと lib/models/dog.dart の
 /// fromJson/toJson だけを直せばよいよう分離している。
 class HttpDogappApiClient implements DogappApiClient {
-  HttpDogappApiClient({http.Client? httpClient, String? baseUrl})
+  HttpDogappApiClient({http.Client? httpClient, String? baseUrl, Duration? timeout})
       : _client = httpClient ?? http.Client(),
-        _baseUrl = baseUrl ?? ApiConfig.baseUrl;
+        _baseUrl = baseUrl ?? ApiConfig.baseUrl,
+        _timeout = timeout ?? const Duration(seconds: 10);
 
   final http.Client _client;
   final String _baseUrl;
+  final Duration _timeout;
 
   @override
   Future<List<Dog>> fetchDogs(String ownerId) async {
     final uri = Uri.parse('$_baseUrl/owners/$ownerId/dogs');
-    final res = await _client.get(uri);
+    final res = await _client.get(uri).timeout(_timeout);
     _checkStatus(res);
     final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
     return [
@@ -69,11 +71,15 @@ class HttpDogappApiClient implements DogappApiClient {
     required Uint8List imageBytes,
   }) async {
     final uri = Uri.parse('$_baseUrl/dogs/$dogId/ai-check');
-    final res = await _client.post(
-      uri,
-      headers: const {'Content-Type': 'application/json'},
-      body: jsonEncode({'imageBase64': base64Encode(imageBytes)}),
-    );
+    final res = await _client
+        .post(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({'imageBase64': base64Encode(imageBytes)}),
+        )
+        // 画像解析はClaude API呼び出しを挟むぶん時間がかかりうるため、
+        // 他のエンドポイントより長めのタイムアウトにする。
+        .timeout(_timeout * 3);
     _checkStatus(res);
     return AICheckResult.fromJson(
       jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,
@@ -87,11 +93,13 @@ class HttpDogappApiClient implements DogappApiClient {
     required String label,
   }) async {
     final uri = Uri.parse('$_baseUrl/dogs/$dogId/records');
-    final res = await _client.post(
-      uri,
-      headers: const {'Content-Type': 'application/json'},
-      body: jsonEncode({'type': type.name, 'label': label}),
-    );
+    final res = await _client
+        .post(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({'type': type.name, 'label': label}),
+        )
+        .timeout(_timeout);
     _checkStatus(res);
     return HealthRecord.fromJson(
       jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,

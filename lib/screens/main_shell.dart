@@ -11,7 +11,7 @@ class MainShell extends StatefulWidget {
   final DogsRepository repository;
 
   /// テストからAICheckScreenの画像選択をフェイクに差し替えるために公開している。
-  final Future<Uint8List?> Function()? pickImage;
+  final Future<Uint8List?> Function(BuildContext context)? pickImage;
 
   const MainShell({super.key, required this.repository, this.pickImage});
 

@@ -7,10 +7,37 @@ import '../theme/app_theme.dart';
 
 enum _CheckStep { idle, analyzing, result, error }
 
-/// 画像選択の実処理。テストではネイティブのプラットフォームチャンネルが
+/// 画像選択の実処理。「撮る・選ぶ」の両方に対応するため、まずカメラ/ギャラリーを
+/// 選ばせてからImagePickerを呼ぶ。テストではネイティブのプラットフォームチャンネルが
 /// 使えないため、[AICheckScreen.pickImage]としてフェイクに差し替えられるようにしている。
-Future<Uint8List?> pickCheckImage() async {
-  final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+Future<Uint8List?> pickCheckImage(BuildContext context) async {
+  final source = await showModalBottomSheet<ImageSource>(
+    context: context,
+    backgroundColor: AppColors.paper,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_camera_outlined, color: AppColors.ink),
+            title: const Text('カメラで撮影', style: AppText.body),
+            onTap: () => Navigator.of(context).pop(ImageSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library_outlined, color: AppColors.ink),
+            title: const Text('ギャラリーから選択', style: AppText.body),
+            onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  if (source == null) return null;
+  final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
   if (picked == null) return null;
   return picked.readAsBytes();
 }
@@ -18,7 +45,7 @@ Future<Uint8List?> pickCheckImage() async {
 class AICheckScreen extends StatefulWidget {
   final List<Dog> dogs;
   final DogsRepository repository;
-  final Future<Uint8List?> Function() pickImage;
+  final Future<Uint8List?> Function(BuildContext context) pickImage;
 
   const AICheckScreen({
     super.key,
@@ -40,7 +67,7 @@ class _AICheckScreenState extends State<AICheckScreen> {
   /// 写真撮影→解析のフロー。
   /// 選んだ画像をBase64化し、dogapp-apiのPOST /dogs/{dogId}/ai-checkへ送信する。
   Future<void> _runCheck() async {
-    final bytes = await widget.pickImage();
+    final bytes = await widget.pickImage(context);
     if (bytes == null) return;
     if (!mounted) return;
     setState(() => _step = _CheckStep.analyzing);

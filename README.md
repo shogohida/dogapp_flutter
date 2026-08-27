@@ -47,7 +47,16 @@ flutter test
 flutter run -d chrome        # または実機/シミュレータ
 ```
 
-`dogapp-api`がまだ無い場合は、同梱の簡易モックサーバーで動作確認できる。
+`dogapp-api`は別リポジトリ(`../dogapp-api`、Go実装)にある実際のバックエンド。
+セットアップ済みなら以下で起動してから`flutter run`すればそのまま繋がる
+(デフォルトのbaseUrlが`http://localhost:8080`のため)。
+
+```bash
+cd ../dogapp-api && go run .
+```
+
+まだセットアップしていない/手早く動作確認したいだけの場合は、同梱の
+簡易モックサーバーでも代用できる(dogapp-apiと同じポートで同じJSON形状を返す)。
 
 ```bash
 dart run tool/mock_server.dart   # http://localhost:8080 で待ち受け
@@ -63,9 +72,8 @@ flutter run --dart-define=API_BASE_URL=https://api.example.com
 ## dogapp-apiとの連携
 
 `lib/services/dogapp_api_client.dart`が以下のエンドポイントを呼び出す。
-フィールド名・enumの文字列表現は実際のdogapp-apiのJSONスキーマに合わせて
-`lib/models/dog.dart` / `lib/models/walk.dart` の `fromJson`/`toJson` を
-調整する想定(未接続の状態で作られた推測値)。
+フィールド名・enumの文字列表現は実際の`dogapp-api`(`../dogapp-api`)の
+JSONスキーマと完全に一致させてある。
 
 | メソッド | パス | 用途 |
 |---|---|---|

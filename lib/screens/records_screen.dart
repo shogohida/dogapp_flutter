@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/dogs_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
 import '../theme/app_theme.dart';
 
@@ -22,10 +23,11 @@ class RecordsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
-        const Text('記録', style: AppText.display),
+        Text(l10n.recordsTitle, style: AppText.display),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -38,7 +40,7 @@ class RecordsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             icon: const Icon(Icons.add, size: 18),
-            label: const Text('記録を追加', style: TextStyle(fontSize: 13)),
+            label: Text(l10n.addRecord, style: const TextStyle(fontSize: 13)),
           ),
         ),
         const SizedBox(height: 16),
@@ -113,12 +115,12 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
   bool _saving = false;
   String? _error;
 
-  static const _typeLabels = {
-    RecordType.vaccine: 'ワクチン接種',
-    RecordType.grooming: 'トリミング',
-    RecordType.vet: '通院',
-    RecordType.medication: '投薬',
-  };
+  Map<RecordType, String> _typeLabels(AppLocalizations l10n) => {
+        RecordType.vaccine: l10n.recordTypeVaccine,
+        RecordType.grooming: l10n.recordTypeGrooming,
+        RecordType.vet: l10n.recordTypeVet,
+        RecordType.medication: l10n.recordTypeMedication,
+      };
 
   @override
   void dispose() {
@@ -128,6 +130,8 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final typeLabels = _typeLabels(l10n);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -141,7 +145,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
         children: [
           Row(
             children: [
-              const Expanded(child: Text('記録を追加', style: AppText.displaySmall)),
+              Expanded(child: Text(l10n.addRecord, style: AppText.displaySmall)),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.close, color: AppColors.ink),
@@ -161,7 +165,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           DropdownButtonFormField<RecordType>(
             initialValue: _type,
             decoration: _fieldDecoration(),
-            items: _typeLabels.entries
+            items: typeLabels.entries
                 .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
                 .toList(),
             onChanged: (v) => setState(() => _type = v!),
@@ -169,7 +173,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           const SizedBox(height: 10),
           TextField(
             controller: _noteController,
-            decoration: _fieldDecoration(hint: 'メモ(任意)'),
+            decoration: _fieldDecoration(hint: l10n.noteOptional),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
@@ -179,7 +183,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _saving ? null : _save,
+              onPressed: _saving ? null : () => _save(l10n, typeLabels),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.ink,
                 foregroundColor: Colors.white,
@@ -192,7 +196,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('保存する', style: TextStyle(fontSize: 13)),
+                  : Text(l10n.save, style: const TextStyle(fontSize: 13)),
             ),
           ),
         ],
@@ -200,18 +204,18 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
     );
   }
 
-  Future<void> _save() async {
+  Future<void> _save(AppLocalizations l10n, Map<RecordType, String> typeLabels) async {
     setState(() {
       _saving = true;
       _error = null;
     });
     final note = _noteController.text.trim();
-    final label = note.isEmpty ? _typeLabels[_type]! : note;
+    final label = note.isEmpty ? typeLabels[_type]! : note;
     try {
       await widget.repository.addRecord(dogId: _dogId, type: _type, label: label);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
-      if (mounted) setState(() => _error = '保存に失敗しました: $e');
+      if (mounted) setState(() => _error = l10n.saveFailed('$e'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

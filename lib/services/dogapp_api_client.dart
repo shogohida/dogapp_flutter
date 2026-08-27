@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/dog.dart';
+import '../models/walk.dart';
 import '../theme/app_theme.dart';
 
 class ApiException implements Exception {
@@ -30,6 +31,16 @@ abstract class DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+  });
+
+  Future<List<WalkRoute>> fetchWalks(String dogId);
+
+  Future<WalkRoute> createWalk({
+    required String dogId,
+    required DateTime startedAt,
+    required Duration duration,
+    required double distanceMeters,
+    required List<GeoPoint> points,
   });
 }
 
@@ -104,6 +115,40 @@ class HttpDogappApiClient implements DogappApiClient {
     return HealthRecord.fromJson(
       jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,
     );
+  }
+
+  @override
+  Future<List<WalkRoute>> fetchWalks(String dogId) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId/walks');
+    final res = await _client.get(uri).timeout(_timeout);
+    _checkStatus(res);
+    final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+    return list.map((e) => WalkRoute.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  @override
+  Future<WalkRoute> createWalk({
+    required String dogId,
+    required DateTime startedAt,
+    required Duration duration,
+    required double distanceMeters,
+    required List<GeoPoint> points,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId/walks');
+    final res = await _client
+        .post(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'startedAt': startedAt.toIso8601String(),
+            'durationSeconds': duration.inSeconds,
+            'distanceMeters': distanceMeters,
+            'points': points.map((p) => p.toJson()).toList(),
+          }),
+        )
+        .timeout(_timeout);
+    _checkStatus(res);
+    return WalkRoute.fromJson(jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
   }
 
   void _checkStatus(http.Response res) {

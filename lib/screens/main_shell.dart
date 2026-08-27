@@ -1,19 +1,28 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../data/dogs_repository.dart';
+import '../data/walks_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import 'ai_check_screen.dart';
 import 'dogs_screen.dart';
 import 'home_screen.dart';
 import 'records_screen.dart';
+import 'walk_screen.dart';
 
 class MainShell extends StatefulWidget {
   final DogsRepository repository;
+  final WalksRepository walksRepository;
 
   /// テストからAICheckScreenの画像選択をフェイクに差し替えるために公開している。
   final Future<Uint8List?> Function(BuildContext context)? pickImage;
 
-  const MainShell({super.key, required this.repository, this.pickImage});
+  const MainShell({
+    super.key,
+    required this.repository,
+    required this.walksRepository,
+    this.pickImage,
+  });
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -22,13 +31,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _tabIndex = 0;
   final _dogsTabKey = GlobalKey<DogsTabScreenState>();
-
-  static const _tabs = [
-    (label: 'ホーム', icon: Icons.home_outlined, activeIcon: Icons.home),
-    (label: '犬たち', icon: Icons.pets_outlined, activeIcon: Icons.pets),
-    (label: '健康チェック', icon: Icons.camera_alt_outlined, activeIcon: Icons.camera_alt),
-    (label: '記録', icon: Icons.list_alt_outlined, activeIcon: Icons.list_alt),
-  ];
 
   @override
   void initState() {
@@ -46,6 +48,15 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tabs = [
+      (label: l10n.tabHome, icon: Icons.home_outlined, activeIcon: Icons.home),
+      (label: l10n.tabDogs, icon: Icons.pets_outlined, activeIcon: Icons.pets),
+      (label: l10n.tabHealthCheck, icon: Icons.camera_alt_outlined, activeIcon: Icons.camera_alt),
+      (label: l10n.tabRecords, icon: Icons.list_alt_outlined, activeIcon: Icons.list_alt),
+      (label: l10n.tabWalk, icon: Icons.directions_walk_outlined, activeIcon: Icons.directions_walk),
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.paper,
       body: SafeArea(
@@ -63,8 +74,8 @@ class _MainShellState extends State<MainShell> {
               );
             }
             if (repo.dogs.isEmpty) {
-              return const Center(
-                child: Text('登録されている犬がいません', style: AppText.bodySoft),
+              return Center(
+                child: Text(l10n.noDogsRegistered, style: AppText.bodySoft),
               );
             }
             return IndexedStack(
@@ -78,6 +89,7 @@ class _MainShellState extends State<MainShell> {
                   pickImage: widget.pickImage ?? pickCheckImage,
                 ),
                 RecordsScreen(dogs: repo.dogs, repository: repo),
+                WalkScreen(dogs: repo.dogs, repository: widget.walksRepository),
               ],
             );
           },
@@ -93,8 +105,8 @@ class _MainShellState extends State<MainShell> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_tabs.length, (i) {
-              final tab = _tabs[i];
+            children: List.generate(tabs.length, (i) {
+              final tab = tabs[i];
               final active = i == _tabIndex;
               return InkWell(
                 onTap: () => setState(() => _tabIndex = i),
@@ -136,6 +148,7 @@ class _LoadErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -144,11 +157,11 @@ class _LoadErrorView extends StatelessWidget {
           children: [
             const Icon(Icons.cloud_off, size: 40, color: AppColors.inkSoft),
             const SizedBox(height: 12),
-            const Text('dogapp-apiに接続できませんでした', style: AppText.body, textAlign: TextAlign.center),
+            Text(l10n.loadErrorTitle, style: AppText.body, textAlign: TextAlign.center),
             const SizedBox(height: 6),
             Text('$error', style: AppText.caption, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: const Text('再試行')),
+            OutlinedButton(onPressed: onRetry, child: Text(l10n.retry)),
           ],
         ),
       ),

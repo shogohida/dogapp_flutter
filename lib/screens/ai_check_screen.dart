@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../data/dogs_repository.dart';
+import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
 import '../theme/app_theme.dart';
 
@@ -11,6 +12,7 @@ enum _CheckStep { idle, analyzing, result, error }
 /// 選ばせてからImagePickerを呼ぶ。テストではネイティブのプラットフォームチャンネルが
 /// 使えないため、[AICheckScreen.pickImage]としてフェイクに差し替えられるようにしている。
 Future<Uint8List?> pickCheckImage(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
     backgroundColor: AppColors.paper,
@@ -23,12 +25,12 @@ Future<Uint8List?> pickCheckImage(BuildContext context) async {
         children: [
           ListTile(
             leading: const Icon(Icons.photo_camera_outlined, color: AppColors.ink),
-            title: const Text('カメラで撮影', style: AppText.body),
+            title: Text(l10n.takePhoto, style: AppText.body),
             onTap: () => Navigator.of(context).pop(ImageSource.camera),
           ),
           ListTile(
             leading: const Icon(Icons.photo_library_outlined, color: AppColors.ink),
-            title: const Text('ギャラリーから選択', style: AppText.body),
+            title: Text(l10n.chooseFromGallery, style: AppText.body),
             onTap: () => Navigator.of(context).pop(ImageSource.gallery),
           ),
           const SizedBox(height: 8),
@@ -97,16 +99,13 @@ class _AICheckScreenState extends State<AICheckScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
-        const Text('健康チェック', style: AppText.display),
+        Text(l10n.healthCheckTitle, style: AppText.display),
         const SizedBox(height: 6),
-        const Text(
-          '皮膚・被毛の写真を撮ると、気になる変化がないかを簡易チェックします。'
-          '診断ではなく、動物病院に相談すべきかどうかの目安です。',
-          style: AppText.bodySoft,
-        ),
+        Text(l10n.healthCheckDescription, style: AppText.bodySoft),
         const SizedBox(height: 18),
         Row(
           children: widget.dogs.map((dog) {
@@ -159,6 +158,7 @@ class _IdleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AspectRatio(
       aspectRatio: 1,
       child: InkWell(
@@ -178,14 +178,14 @@ class _IdleCard extends StatelessWidget {
                 child: const Icon(Icons.camera_alt_outlined, color: AppColors.ink, size: 26),
               ),
               const SizedBox(height: 12),
-              const Text('写真を撮る・選ぶ', style: AppText.body),
+              Text(l10n.takeOrChoosePhoto, style: AppText.body),
               const SizedBox(height: 4),
-              const Row(
+              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.upload_outlined, size: 12, color: AppColors.inkSoft),
-                  SizedBox(width: 4),
-                  Text('タップしてアップロード', style: AppText.caption),
+                  const Icon(Icons.upload_outlined, size: 12, color: AppColors.inkSoft),
+                  const SizedBox(width: 4),
+                  Text(l10n.tapToUpload, style: AppText.caption),
                 ],
               ),
             ],
@@ -279,7 +279,7 @@ class _AnalyzingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text('解析しています…', style: AppText.bodySoft),
+              Text(AppLocalizations.of(context)!.analyzing, style: AppText.bodySoft),
             ],
           ),
         ),
@@ -296,6 +296,7 @@ class _ErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -307,11 +308,11 @@ class _ErrorCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.error_outline, size: 20, color: AppColors.concernBorder),
-              SizedBox(width: 8),
-              Expanded(child: Text('解析に失敗しました', style: AppText.displaySmall)),
+              const Icon(Icons.error_outline, size: 20, color: AppColors.concernBorder),
+              const SizedBox(width: 8),
+              Expanded(child: Text(l10n.analysisFailed, style: AppText.displaySmall)),
             ],
           ),
           const SizedBox(height: 8),
@@ -326,7 +327,7 @@ class _ErrorCard extends StatelessWidget {
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text('もう一度試す', style: AppText.body),
+              child: Text(l10n.tryAgain, style: AppText.body),
             ),
           ),
         ],
@@ -355,6 +356,7 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = _style;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         AspectRatio(
@@ -403,14 +405,14 @@ class _ResultCard extends StatelessWidget {
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            child: const Text('もう一度チェックする', style: AppText.body),
+            child: Text(l10n.checkAgain, style: AppText.body),
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
-          '※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。',
+        Text(
+          l10n.aiCheckDisclaimer,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 10, color: AppColors.inkSoft),
+          style: const TextStyle(fontSize: 10, color: AppColors.inkSoft),
         ),
       ],
     );

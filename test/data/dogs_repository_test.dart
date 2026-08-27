@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dogapp/data/dogs_repository.dart';
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,6 +43,27 @@ class _StubApiClient implements DogappApiClient {
     required String label,
   }) async {
     return createRecordResult!;
+  }
+
+  @override
+  Future<List<WalkRoute>> fetchWalks(String dogId) async => [];
+
+  @override
+  Future<WalkRoute> createWalk({
+    required String dogId,
+    required DateTime startedAt,
+    required Duration duration,
+    required double distanceMeters,
+    required List<GeoPoint> points,
+  }) async {
+    return WalkRoute(
+      id: 'stub-walk',
+      dogId: dogId,
+      startedAt: startedAt,
+      duration: duration,
+      distanceMeters: distanceMeters,
+      points: points,
+    );
   }
 }
 

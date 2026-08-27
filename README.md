@@ -1,97 +1,121 @@
 # dogapp_flutter
 
 犬の健康管理アプリのFlutter版。Web版プロトタイプ(`DogHealthApp.jsx`)と
-同じ画面構成・データ・デザイントークンを、iOS/Android向けにDartへ移植したもの。
+同じ画面構成・デザイントークンを踏襲しつつ、`dogapp-api`(Go実装、Claude API連携)
+への実HTTP接続・日英ローカライズ・GPSによる散歩記録機能を備えたもの。
 
 ## 構成
 
 ```
 lib/
-  main.dart                アプリのエントリーポイント
-  theme/app_theme.dart      デザイントークン(色・タイポグラフィ) - Web版と統一
-  models/dog.dart           ドメインモデル(Dog, HealthRecord, WeightEntry, AICheckResult)
-  data/mock_data.dart       モックデータ(レオ・ノア) - Web版と同じ内容
-  widgets/dog_avatar.dart   犬アバター
-  widgets/weight_chart.dart 体重推移チャート(CustomPainterによる自前実装)
+  main.dart                  アプリのエントリーポイント(l10n/API/位置情報の依存性注入)
+  config/api_config.dart     dogapp-apiのbaseUrl/ownerId(--dart-defineで上書き可)
+  theme/app_theme.dart       デザイントークン(色・タイポグラフィ)
+  l10n/                      日本語(ja)・英語(en)のARBファイルと生成コード
+  models/
+    dog.dart                 Dog, HealthRecord, WeightEntry, AICheckResult
+    walk.dart                GeoPoint, WalkRoute, RecommendedCourse
+  data/
+    mock_data.dart           サンプルデータ(レオ・ノア) / フェイクテストの種データ
+    dogs_repository.dart     犬一覧の読み込み・記録追加を管理するChangeNotifier
+    walks_repository.dart    散歩記録のGPS計測・保存・おすすめコース集計
+  services/
+    dogapp_api_client.dart   dogapp-apiへのHTTPクライアント(タイムアウト付き)
+    location_service.dart    geolocatorへの薄いラッパー
+  utils/geo.dart             2点間距離(Haversine公式)
+  widgets/dog_avatar.dart, weight_chart.dart
   screens/
-    main_shell.dart         ボトムタブナビゲーション
-    home_screen.dart        ホーム画面
-    dogs_screen.dart        犬一覧・プロフィール画面
-    ai_check_screen.dart    健康チェック画面(AIチェックのモックフロー)
-    records_screen.dart     記録画面(一覧・追加モーダル)
+    main_shell.dart          ボトムタブナビゲーション(ホーム/犬たち/健康チェック/記録/散歩)
+    home_screen.dart, dogs_screen.dart, ai_check_screen.dart,
+    records_screen.dart, walk_screen.dart
 test/
-  widget_test.dart          画面遷移・インタラクションのウィジェットテスト
+  widget_test.dart           画面遷移・インタラクションのウィジェットテスト
+  models/, services/, data/  JSON変換・APIクライアント・リポジトリのユニットテスト
+  fakes/                     実ネットワーク/ネイティブプラグインに依存しないフェイク実装
+tool/
+  mock_server.dart           dogapp-apiの簡易モック(ローカル動作確認用、本物ではない)
 scripts/
-  check_dart_syntax.py      括弧・文字列リテラルの対応を検証する簡易構文チェッカー
+  check_dart_syntax.py       括弧・文字列リテラルの対応を検証する簡易構文チェッカー
 ```
 
-## 依存パッケージについて
-
-外部pubパッケージには依存していない(Flutter SDK標準機能のみ)。
-Web版ではrechartsを使っていた体重推移グラフも、`CustomPainter`で自前実装している。
-これは`apilab`のGraphQLエンジンを`reflect`だけで書いたのと同じ、
-このポートフォリオ全体の"no deps"方針を踏襲したもの。
-
-## 検証について(重要な注記)
-
-**このコードは `flutter analyze` / `flutter test` を実際に実行して検証したものではない。**
-
-理由は、このリポジトリを作成した開発環境にFlutter SDK/Dart SDKが
-インストールされておらず、かつネットワークアクセスが特定ドメインに
-制限されているため、SDKの配布元(`storage.googleapis.com`など)から
-ダウンロードすることもできなかったため。
-
-代わりに、以下の検証を行っている。
-
-1. **手動コードレビュー**: 全ファイルを見直し、Dartの型システムに関する
-   既知の落とし穴(`num`/`double`の暗黙変換がされない、`clamp()`が`num`を
-   返すため`double`引数箇所で型エラーになる、など)を2箇所発見し修正した
-   (`lib/widgets/weight_chart.dart`, `lib/screens/ai_check_screen.dart`)。
-2. **`scripts/check_dart_syntax.py`**: 文字列リテラル・コメントを考慮しながら
-   丸括弧・波括弧・角括弧の対応を検証する自作スクリプト。全12ファイルで
-   問題なしを確認済み。
-
-```bash
-python3 scripts/check_dart_syntax.py
-```
-
-**このリポジトリを実際に使う場合、必ずローカルで以下を実行してほしい。**
+## 実行方法
 
 ```bash
 flutter pub get
-flutter analyze   # 型チェック・lintを含む本来の静的解析
-flutter test      # test/widget_test.dart の実行
-flutter run       # 実機/シミュレータでの動作確認
+flutter analyze
+flutter test
+flutter run -d chrome        # または実機/シミュレータ
 ```
 
-`check_dart_syntax.py`は`dart analyze`の代替にはならない
-(型不整合、存在しないメンバー参照、未使用importなどは検出できない)。
-できないことをできるように見せるより、どこまで検証していて、
-どこから先はSDKのある環境が必要かを正直に書いておくことの方が
-重要だと考えている(`zeroboard-infra`のterraform validateに関する
-注記と同じ方針)。
+`dogapp-api`がまだ無い場合は、同梱の簡易モックサーバーで動作確認できる。
+
+```bash
+dart run tool/mock_server.dart   # http://localhost:8080 で待ち受け
+flutter run -d chrome            # デフォルトでlocalhost:8080に接続する
+```
+
+本番のdogapp-apiに繋ぐ場合はビルド時にURLを差し替える。
+
+```bash
+flutter run --dart-define=API_BASE_URL=https://api.example.com
+```
+
+## dogapp-apiとの連携
+
+`lib/services/dogapp_api_client.dart`が以下のエンドポイントを呼び出す。
+フィールド名・enumの文字列表現は実際のdogapp-apiのJSONスキーマに合わせて
+`lib/models/dog.dart` / `lib/models/walk.dart` の `fromJson`/`toJson` を
+調整する想定(未接続の状態で作られた推測値)。
+
+| メソッド | パス | 用途 |
+|---|---|---|
+| GET | `/owners/{ownerId}/dogs` | 犬一覧の取得 |
+| POST | `/dogs/{dogId}/ai-check` | 写真(Base64)を送りAI健康チェック結果を取得 |
+| POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加 |
+| GET | `/dogs/{dogId}/walks` | 散歩記録の一覧取得 |
+| POST | `/dogs/{dogId}/walks` | GPSで記録した散歩ルートの保存 |
+
+## 散歩GPS記録・おすすめコース
+
+「散歩」タブでは以下を行う。
+
+- `geolocator`で位置情報をストリーム取得し、`flutter_map`(OpenStreetMapタイル、
+  APIキー不要)でルートをリアルタイム描画
+- 記録終了時に距離(Haversine公式で算出)・時間とともに`dogapp-api`へ保存
+- 「おすすめ散歩コース」は外部の地図/検索APIを使わず、自分の過去の散歩履歴を
+  開始地点の近さ(約100m四方)でグルーピングし、歩いた回数が多い順に提示する
+  簡易ロジック(`WalksRepository.recommendedCourses()`)
+
+Web版のブラウザで動かす場合、位置情報の利用にはブラウザ側の許可が必要。
+
+## ローカライズ(日本語/英語)
+
+Flutter標準の`flutter_localizations` + `intl`(ARBファイル)方式。
+`lib/l10n/app_ja.arb`が原本、`app_en.arb`が英語訳。文言を追加・変更する場合は
+両方のARBを編集してから以下で生成コードを更新する。
+
+```bash
+flutter gen-l10n
+```
+
+表示言語は端末のロケール設定に従う(`MaterialApp.supportedLocales`に`ja`/`en`を登録)。
+犬の名前・品種・記録のラベルなど`dogapp-api`から取得するデータ自体は翻訳対象外
+(ユーザーデータであり、アプリのUI文言ではないため)。
+
+## テストについて
+
+`flutter test`は実ネットワーク・実GPS・ネイティブプラグイン(image_picker/
+geolocator)に依存せず、すべて`test/fakes/`のフェイク実装や
+`http/testing.dart`の`MockClient`で完結する。ウィジェットテストは
+既定のテスト画面サイズ(800x600、電話向けUIには小さすぎる)と英語ロケールの
+まま失敗しがちなため、`test/widget_test.dart`のヘルパーでiPhoneサイズ・
+日本語ロケールに固定している。
 
 ## Web版との対応関係
 
 | Web版(DogHealthApp.jsx) | Flutter版 |
 |---|---|
 | `useState`によるタブ切り替え | `MainShell`の`IndexedStack` |
-| lucide-react アイコン | Material Icons(組み込み、依存追加不要) |
+| lucide-react アイコン | Material Icons(組み込み) |
 | recharts の`LineChart` | `WeightChart`(CustomPainterで自前実装) |
 | `border-dashed` (Tailwind) | `DottedBorderBox`(CustomPainterで自前実装) |
-| `setTimeout`によるAI解析のモック | `Future.delayed`によるモック |
-
-## 今後の実装(バックエンド接続)
-
-現在はモックデータ・モック応答で完結しているプロトタイプ。
-`dogapp-api`(Go実装、Claude API連携済み)と接続する場合:
-
-- `mock_data.dart`のデータ取得を、`dogapp-api`の`GET /owners/{ownerId}/dogs`
-  等へのHTTP呼び出し(`http`パッケージなど)に置き換える
-- `ai_check_screen.dart`の`_runCheck()`を、実際に撮影した画像をBase64化して
-  `POST /dogs/{dogId}/ai-check`に送信する処理に置き換える
-- `records_screen.dart`の保存処理を、`POST /dogs/{dogId}/records`への
-  実際のリクエストに置き換える
-
-これらは全て、モック関数の中身を差し替えるだけで済むよう、
-画面側のロジックとデータ取得処理を分離した設計にしている。

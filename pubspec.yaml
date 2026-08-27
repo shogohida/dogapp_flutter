@@ -9,12 +9,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
   # チャートはCustomPainterで自前実装、アイコンはMaterial Iconsのみを使用という
   # "no deps"方針は維持しつつ、dogapp-apiとの通信のみhttpパッケージを利用する
   # (README「今後の実装」参照)。
   http: ^1.2.2
   # 「写真を撮る・選ぶ」から実際の画像を取得してAPIへ送るために使用。
   image_picker: ^1.1.2
+  # 散歩GPS記録機能用。
+  geolocator: ^13.0.1
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +30,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   # 本番では以下のようにFraunces/Inter/JetBrains Monoフォントを
   # assets/fonts に配置してWebプロトタイプ(DogHealthApp.jsx)と
   # 見た目を統一することを推奨する。

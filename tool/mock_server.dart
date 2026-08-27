@@ -48,6 +48,9 @@ final _dogs = [
   },
 ];
 
+// dogId -> 散歩記録のリスト。プロセスを再起動すると消える簡易ストレージ。
+final _walks = <String, List<Map<String, dynamic>>>{};
+
 final _aiResults = [
   {
     'level': 'normal',
@@ -124,6 +127,32 @@ Future<void> _handle(HttpRequest req) async {
       'date': DateTime.now().toIso8601String(),
     };
     req.response.write(jsonEncode(record));
+    await req.response.close();
+    return;
+  }
+
+  // GET /dogs/{dogId}/walks
+  if (req.method == 'GET' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'walks') {
+    final dogId = segments[1];
+    req.response.write(jsonEncode(_walks[dogId] ?? []));
+    await req.response.close();
+    return;
+  }
+
+  // POST /dogs/{dogId}/walks
+  if (req.method == 'POST' && segments.length == 3 && segments[0] == 'dogs' && segments[2] == 'walks') {
+    final dogId = segments[1];
+    final body = jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final walk = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'dogId': dogId,
+      'startedAt': body['startedAt'],
+      'durationSeconds': body['durationSeconds'],
+      'distanceMeters': body['distanceMeters'],
+      'points': body['points'],
+    };
+    _walks.putIfAbsent(dogId, () => []).insert(0, walk);
+    req.response.write(jsonEncode(walk));
     await req.response.close();
     return;
   }

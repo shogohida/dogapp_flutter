@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -95,6 +96,68 @@ void main() {
 
       expect(record.id, '99');
       expect(record.type, RecordType.vet);
+    });
+  });
+
+  group('HttpDogappApiClient.fetchWalks', () {
+    test('GET /dogs/{dogId}/walks のレスポンスをWalkRouteのリストにパースする', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/dogs/leo/walks');
+        return _jsonResponse([
+          {
+            'id': 'w1',
+            'dogId': 'leo',
+            'startedAt': '2026-08-27T10:00:00Z',
+            'durationSeconds': 1200,
+            'distanceMeters': 1500.5,
+            'points': [
+              {'lat': 35.0, 'lng': 139.0, 'timestamp': '2026-08-27T10:00:00Z'},
+            ],
+          },
+        ]);
+      });
+      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final walks = await client.fetchWalks('leo');
+
+      expect(walks, hasLength(1));
+      expect(walks.first.distanceMeters, 1500.5);
+      expect(walks.first.duration, const Duration(seconds: 1200));
+      expect(walks.first.points.single.lat, 35.0);
+    });
+  });
+
+  group('HttpDogappApiClient.createWalk', () {
+    test('開始時刻・距離・GPS点をPOSTし、作成されたWalkRouteを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/dogs/leo/walks');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['durationSeconds'], 600);
+        expect(body['distanceMeters'], 800.0);
+        expect((body['points'] as List).length, 1);
+        return _jsonResponse({
+          'id': 'w2',
+          'dogId': 'leo',
+          'startedAt': '2026-08-27T10:00:00Z',
+          'durationSeconds': 600,
+          'distanceMeters': 800.0,
+          'points': body['points'],
+        });
+      });
+      final client = HttpDogappApiClient(httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final walk = await client.createWalk(
+        dogId: 'leo',
+        startedAt: DateTime.utc(2026, 8, 27, 10),
+        duration: const Duration(seconds: 600),
+        distanceMeters: 800,
+        points: [GeoPoint(lat: 35.0, lng: 139.0, timestamp: DateTime.utc(2026, 8, 27, 10))],
+      );
+
+      expect(walk.id, 'w2');
+      expect(walk.distanceMeters, 800.0);
     });
   });
 }

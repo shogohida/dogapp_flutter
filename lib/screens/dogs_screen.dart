@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
 import '../theme/app_theme.dart';
 import '../widgets/dog_avatar.dart';
@@ -48,10 +49,11 @@ class DogsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
-        const Text('犬たち', style: AppText.display),
+        Text(l10n.dogsTitle, style: AppText.display),
         const SizedBox(height: 16),
         ...dogs.map((dog) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -74,7 +76,7 @@ class DogsListScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(dog.name, style: AppText.displaySmall),
-                            Text('${dog.breed} ・ ${dog.color}', style: AppText.caption),
+                            Text(l10n.breedColorLine(dog.breed, dog.color), style: AppText.caption),
                           ],
                         ),
                       ),
@@ -97,6 +99,7 @@ class DogProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
@@ -121,13 +124,13 @@ class DogProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(dog.breed, style: AppText.caption),
-                Text('${dog.color} ・ ${dog.ageInYears(2026)}歳', style: AppText.caption),
+                Text(l10n.dogInfoLine(dog.color, dog.ageInYears(2026)), style: AppText.caption),
               ],
             ),
           ],
         ),
         const SizedBox(height: 24),
-        const Text('体重推移', style: AppText.eyebrow),
+        Text(l10n.weightHistory, style: AppText.eyebrow),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
@@ -139,7 +142,7 @@ class DogProfileScreen extends StatelessWidget {
           child: WeightChart(entries: dog.weightHistory, accent: dog.accent),
         ),
         const SizedBox(height: 24),
-        const Text('記録', style: AppText.eyebrow),
+        Text(l10n.recordsTitle, style: AppText.eyebrow),
         const SizedBox(height: 8),
         ...dog.records.map((r) => Padding(
               padding: const EdgeInsets.only(bottom: 8),

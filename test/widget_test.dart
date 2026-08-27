@@ -20,6 +20,16 @@ Future<void> _pumpApp(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
+  // テストの期待文言は日本語で書かれているため、ロケール(既定では英語のことが
+  // 多いテスト環境の言語)を明示的に日本語に固定する。MaterialAppの既定の
+  // ロケール解決は`.locale`ではなく`.locales`(優先順位リスト)を見るため、
+  // 両方を設定する必要がある。
+  const testLocale = Locale('ja', 'JP');
+  tester.platformDispatcher.localeTestValue = testLocale;
+  tester.platformDispatcher.localesTestValue = [testLocale];
+  addTearDown(tester.platformDispatcher.clearLocaleTestValue);
+  addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+
   await tester.pumpWidget(DogHealthApp(
     apiClient: FakeDogappApiClient(),
     pickImage: pickImage,

@@ -1,0 +1,96 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "犬の健康管理",
+  "@appTitle": {"description": "アプリタイトル"},
+
+  "tabHome": "ホーム",
+  "tabDogs": "犬たち",
+  "tabHealthCheck": "健康チェック",
+  "tabRecords": "記録",
+  "tabWalk": "散歩",
+
+  "loadErrorTitle": "dogapp-apiに接続できませんでした",
+  "retry": "再試行",
+  "noDogsRegistered": "登録されている犬がいません",
+
+  "welcomeBack": "おかえりなさい",
+  "healthRecordsSummary": "{count}匹の健康記録、今日も欠かさず。",
+  "@healthRecordsSummary": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "upcoming": "今後の予定",
+  "dogInfoLine": "{color} ・ {age}歳",
+  "@dogInfoLine": {
+    "placeholders": {
+      "color": {"type": "String"},
+      "age": {"type": "int"}
+    }
+  },
+
+  "dogsTitle": "犬たち",
+  "weightHistory": "体重推移",
+  "recordsTitle": "記録",
+  "breedColorLine": "{breed} ・ {color}",
+  "@breedColorLine": {
+    "placeholders": {
+      "breed": {"type": "String"},
+      "color": {"type": "String"}
+    }
+  },
+
+  "healthCheckTitle": "健康チェック",
+  "healthCheckDescription": "皮膚・被毛の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "takeOrChoosePhoto": "写真を撮る・選ぶ",
+  "tapToUpload": "タップしてアップロード",
+  "takePhoto": "カメラで撮影",
+  "chooseFromGallery": "ギャラリーから選択",
+  "analyzing": "解析しています…",
+  "analysisFailed": "解析に失敗しました",
+  "tryAgain": "もう一度試す",
+  "checkAgain": "もう一度チェックする",
+  "aiCheckDisclaimer": "※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。",
+
+  "addRecord": "記録を追加",
+  "noteOptional": "メモ(任意)",
+  "save": "保存する",
+  "saveFailed": "保存に失敗しました: {error}",
+  "@saveFailed": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "recordTypeVaccine": "ワクチン接種",
+  "recordTypeGrooming": "トリミング",
+  "recordTypeVet": "通院",
+  "recordTypeMedication": "投薬",
+
+  "walkTitle": "散歩",
+  "startWalk": "散歩を始める",
+  "stopWalk": "散歩を終える",
+  "recording": "記録中…",
+  "distance": "距離",
+  "duration": "時間",
+  "pace": "ペース",
+  "walkHistory": "散歩の記録",
+  "recommendedCourses": "おすすめ散歩コース",
+  "noWalksYet": "まだ散歩の記録がありません",
+  "noRecommendationsYet": "散歩を記録すると、よく歩くコースをおすすめします",
+  "walkedNTimes": "{count}回歩いたコース",
+  "@walkedNTimes": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "locationPermissionDenied": "位置情報の利用が許可されていません",
+  "locationServiceDisabled": "位置情報サービスが無効になっています",
+  "saveWalkFailed": "散歩記録の保存に失敗しました: {error}",
+  "@saveWalkFailed": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "loadWalksFailed": "散歩記録の読み込みに失敗しました: {error}",
+  "@loadWalksFailed": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "discardWalk": "破棄する",
+  "discardWalkConfirm": "この散歩の記録を破棄しますか?",
+  "cancel": "キャンセル",
+  "km": "km",
+  "minutesShort": "分"
+}

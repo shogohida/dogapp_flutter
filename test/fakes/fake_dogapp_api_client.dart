@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dogapp/data/mock_data.dart';
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 
 /// 実ネットワークに依存せずウィジェットテストを走らせるためのフェイク実装。
@@ -28,5 +29,26 @@ class FakeDogappApiClient implements DogappApiClient {
     required String label,
   }) async {
     return HealthRecord(id: 'fake-id', type: type, label: label, date: DateTime.now());
+  }
+
+  @override
+  Future<List<WalkRoute>> fetchWalks(String dogId) async => [];
+
+  @override
+  Future<WalkRoute> createWalk({
+    required String dogId,
+    required DateTime startedAt,
+    required Duration duration,
+    required double distanceMeters,
+    required List<GeoPoint> points,
+  }) async {
+    return WalkRoute(
+      id: 'fake-walk-id',
+      dogId: dogId,
+      startedAt: startedAt,
+      duration: duration,
+      distanceMeters: distanceMeters,
+      points: points,
+    );
   }
 }

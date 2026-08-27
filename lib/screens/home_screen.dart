@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
+import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
 import '../theme/app_theme.dart';
 import '../widgets/dog_avatar.dart';
@@ -12,14 +13,15 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('おかえりなさい', style: AppText.display),
+          Text(l10n.welcomeBack, style: AppText.display),
           const SizedBox(height: 2),
-          Text('${dogs.length}匹の健康記録、今日も欠かさず。', style: AppText.bodySoft),
+          Text(l10n.healthRecordsSummary(dogs.length), style: AppText.bodySoft),
           const SizedBox(height: 20),
           Row(
             children: dogs
@@ -35,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                 .toList(),
           ),
           const SizedBox(height: 28),
-          const Text('今後の予定', style: AppText.eyebrow),
+          Text(l10n.upcoming, style: AppText.eyebrow),
           const SizedBox(height: 10),
           _UpcomingTimeline(dogs: dogs, items: mockUpcoming),
         ],
@@ -76,7 +78,10 @@ class _DogCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(dog.name, style: AppText.displaySmall),
             const SizedBox(height: 2),
-            Text('${dog.color} ・ ${dog.ageInYears(2026)}歳', style: AppText.caption),
+            Text(
+              AppLocalizations.of(context)!.dogInfoLine(dog.color, dog.ageInYears(2026)),
+              style: AppText.caption,
+            ),
             const SizedBox(height: 6),
             RichText(
               text: TextSpan(

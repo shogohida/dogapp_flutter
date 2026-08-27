@@ -179,6 +179,24 @@ void main() {
     expect(anyDropdown, findsNothing);
   });
 
+  testWidgets('記録追加時に費用を入力すると一覧・合計に反映される', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('記録').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('記録を追加'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('recordCostField')), '2500');
+    await tester.tap(find.text('保存する'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¥2,500'), findsOneWidget);
+    // 既存の記録(合計29,500円)+今回の2,500円。
+    expect(find.text('費用の合計: ¥32,000'), findsOneWidget);
+  });
+
   testWidgets('記録一覧は日付の新しい順に並んでいる', (tester) async {
     await _pumpApp(tester);
 

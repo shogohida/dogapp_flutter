@@ -10,18 +10,33 @@ void main() {
     expect(restored.kg, entry.kg);
   });
 
-  test('HealthRecord.fromJson/toJsonは対称', () {
+  test('HealthRecord.fromJson/toJsonは対称(費用あり)', () {
     final record = HealthRecord(
       id: '1',
       type: RecordType.grooming,
       label: 'トリミング',
       date: DateTime.utc(2026, 8, 15),
+      cost: 6500,
     );
     final restored = HealthRecord.fromJson(record.toJson());
     expect(restored.id, record.id);
     expect(restored.type, record.type);
     expect(restored.label, record.label);
     expect(restored.date, record.date);
+    expect(restored.cost, 6500);
+  });
+
+  test('HealthRecord.fromJson/toJsonは対称(費用なし)', () {
+    final record = HealthRecord(
+      id: '1',
+      type: RecordType.aiCheck,
+      label: '健康チェック: 問題なし',
+      date: DateTime.utc(2026, 8, 15),
+    );
+    final json = record.toJson();
+    expect(json.containsKey('cost'), isFalse);
+    final restored = HealthRecord.fromJson(json);
+    expect(restored.cost, isNull);
   });
 
   test('Dog.fromJson/toJsonは対称(accentは表示専用なので引数で渡す)', () {

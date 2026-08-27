@@ -51,11 +51,13 @@ class DogsRepository extends ChangeNotifier {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   }) async {
     final record = await _client.createRecord(
       dogId: dogId,
       type: type,
       label: label,
+      cost: cost,
     );
     final index = dogs.indexWhere((d) => d.id == dogId);
     if (index == -1) return;

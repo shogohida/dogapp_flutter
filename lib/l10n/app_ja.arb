@@ -69,6 +69,12 @@
 
   "addRecord": "記録を追加",
   "noteOptional": "メモ(任意)",
+  "costOptional": "費用(任意)",
+  "invalidCost": "費用は0以上の数値で入力してください",
+  "totalCost": "費用の合計: {amount}",
+  "@totalCost": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
   "save": "保存する",
   "saveFailed": "保存に失敗しました: {error}",
   "@saveFailed": {

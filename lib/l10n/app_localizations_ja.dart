@@ -139,6 +139,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noteOptional => 'メモ(任意)';
 
   @override
+  String get costOptional => '費用(任意)';
+
+  @override
+  String get invalidCost => '費用は0以上の数値で入力してください';
+
+  @override
+  String totalCost(String amount) {
+    return '費用の合計: $amount';
+  }
+
+  @override
   String get save => '保存する';
 
   @override

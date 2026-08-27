@@ -41,12 +41,15 @@ class HealthRecord {
   final RecordType type;
   final String label;
   final DateTime date;
+  // 円単位。任意項目(AIチェック結果など費用が発生しない記録もあるため)。
+  final double? cost;
 
   const HealthRecord({
     required this.id,
     required this.type,
     required this.label,
     required this.date,
+    this.cost,
   });
 
   factory HealthRecord.fromJson(Map<String, dynamic> json) {
@@ -55,6 +58,7 @@ class HealthRecord {
       type: RecordType.values.byName(json['type'] as String),
       label: json['label'] as String,
       date: DateTime.parse(json['date'] as String),
+      cost: (json['cost'] as num?)?.toDouble(),
     );
   }
 
@@ -63,6 +67,7 @@ class HealthRecord {
         'type': type.name,
         'label': label,
         'date': date.toIso8601String(),
+        if (cost != null) 'cost': cost,
       };
 }
 

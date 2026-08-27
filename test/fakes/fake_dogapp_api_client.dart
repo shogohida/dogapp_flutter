@@ -37,9 +37,15 @@ class FakeDogappApiClient implements DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   }) async {
     return HealthRecord(
-        id: 'fake-id', type: type, label: label, date: DateTime.now());
+      id: 'fake-id',
+      type: type,
+      label: label,
+      date: DateTime.now(),
+      cost: cost,
+    );
   }
 
   @override

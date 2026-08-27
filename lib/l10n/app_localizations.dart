@@ -332,6 +332,24 @@ abstract class AppLocalizations {
   /// **'メモ(任意)'**
   String get noteOptional;
 
+  /// No description provided for @costOptional.
+  ///
+  /// In ja, this message translates to:
+  /// **'費用(任意)'**
+  String get costOptional;
+
+  /// No description provided for @invalidCost.
+  ///
+  /// In ja, this message translates to:
+  /// **'費用は0以上の数値で入力してください'**
+  String get invalidCost;
+
+  /// No description provided for @totalCost.
+  ///
+  /// In ja, this message translates to:
+  /// **'費用の合計: {amount}'**
+  String totalCost(String amount);
+
   /// No description provided for @save.
   ///
   /// In ja, this message translates to:

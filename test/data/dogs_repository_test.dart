@@ -53,6 +53,7 @@ class _StubApiClient implements DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   }) async {
     return createRecordResult!;
   }

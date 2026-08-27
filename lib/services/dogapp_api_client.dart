@@ -38,6 +38,7 @@ abstract class DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   });
 
   Future<List<WalkRoute>> fetchWalks(String dogId);
@@ -130,13 +131,18 @@ class HttpDogappApiClient implements DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   }) async {
     final uri = Uri.parse('$_baseUrl/dogs/$dogId/records');
     final res = await _client
         .post(
           uri,
           headers: const {'Content-Type': 'application/json'},
-          body: jsonEncode({'type': type.name, 'label': label}),
+          body: jsonEncode({
+            'type': type.name,
+            'label': label,
+            if (cost != null) 'cost': cost,
+          }),
         )
         .timeout(_timeout);
     _checkStatus(res);

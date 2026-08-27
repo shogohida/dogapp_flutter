@@ -119,28 +119,51 @@ void main() {
   });
 
   group('HttpDogappApiClient.createRecord', () {
-    test('type/labelをPOSTし、作成されたHealthRecordを返す', () async {
+    test('type/label/costをPOSTし、作成されたHealthRecordを返す', () async {
       final mock = MockClient((request) async {
         expect(request.method, 'POST');
         expect(request.url.path, '/dogs/leo/records');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['type'], 'vet');
         expect(body['label'], '定期健診');
+        expect(body['cost'], 4500.0);
         return _jsonResponse({
           'id': '99',
           'type': 'vet',
           'label': '定期健診',
-          'date': '2026-08-27T00:00:00Z'
+          'date': '2026-08-27T00:00:00Z',
+          'cost': 4500.0,
         });
       });
       final client = HttpDogappApiClient(
           httpClient: mock, baseUrl: 'http://localhost:8080');
 
       final record = await client.createRecord(
-          dogId: 'leo', type: RecordType.vet, label: '定期健診');
+          dogId: 'leo', type: RecordType.vet, label: '定期健診', cost: 4500);
 
       expect(record.id, '99');
       expect(record.type, RecordType.vet);
+      expect(record.cost, 4500.0);
+    });
+
+    test('costを省略するとリクエストボディにcostフィールドが含まれない', () async {
+      final mock = MockClient((request) async {
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body.containsKey('cost'), isFalse);
+        return _jsonResponse({
+          'id': '99',
+          'type': 'vaccine',
+          'label': 'ワクチン',
+          'date': '2026-08-27T00:00:00Z',
+        });
+      });
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final record = await client.createRecord(
+          dogId: 'leo', type: RecordType.vaccine, label: 'ワクチン');
+
+      expect(record.cost, isNull);
     });
   });
 

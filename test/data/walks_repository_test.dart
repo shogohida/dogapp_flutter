@@ -30,6 +30,7 @@ class _UnusedApiClient implements DogappApiClient {
     required String dogId,
     required RecordType type,
     required String label,
+    double? cost,
   }) =>
       throw UnimplementedError();
 

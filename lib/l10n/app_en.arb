@@ -47,6 +47,9 @@
 
   "addRecord": "Add Record",
   "noteOptional": "Note (optional)",
+  "costOptional": "Cost (optional)",
+  "invalidCost": "Enter a cost of 0 or more",
+  "totalCost": "Total cost: {amount}",
   "save": "Save",
   "saveFailed": "Failed to save: {error}",
   "recordTypeVaccine": "Vaccine",

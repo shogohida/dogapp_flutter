@@ -139,6 +139,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteOptional => 'Note (optional)';
 
   @override
+  String get costOptional => 'Cost (optional)';
+
+  @override
+  String get invalidCost => 'Enter a cost of 0 or more';
+
+  @override
+  String totalCost(String amount) {
+    return 'Total cost: $amount';
+  }
+
+  @override
   String get save => 'Save';
 
   @override

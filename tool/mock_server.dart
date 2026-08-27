@@ -26,19 +26,22 @@ final _dogs = [
         'id': '1',
         'type': 'vaccine',
         'label': '混合ワクチン接種',
-        'date': '2026-07-12T00:00:00Z'
+        'date': '2026-07-12T00:00:00Z',
+        'cost': 8000,
       },
       {
         'id': '2',
         'type': 'grooming',
         'label': 'トリミング(サマーカット)',
-        'date': '2026-08-02T00:00:00Z'
+        'date': '2026-08-02T00:00:00Z',
+        'cost': 6500,
       },
       {
         'id': '3',
         'type': 'vet',
         'label': '定期健診',
-        'date': '2026-08-15T00:00:00Z'
+        'date': '2026-08-15T00:00:00Z',
+        'cost': 4500,
       },
     ],
   },
@@ -61,13 +64,15 @@ final _dogs = [
         'id': '1',
         'type': 'grooming',
         'label': 'トリミング(全身カット)',
-        'date': '2026-08-05T00:00:00Z'
+        'date': '2026-08-05T00:00:00Z',
+        'cost': 7000,
       },
       {
         'id': '2',
         'type': 'vaccine',
         'label': '狂犬病予防接種',
-        'date': '2026-06-20T00:00:00Z'
+        'date': '2026-06-20T00:00:00Z',
+        'cost': 3500,
       },
     ],
   },
@@ -191,6 +196,7 @@ Future<void> _handle(HttpRequest req) async {
       'type': body['type'],
       'label': body['label'],
       'date': DateTime.now().toIso8601String(),
+      if (body['cost'] != null) 'cost': body['cost'],
     };
     req.response.write(jsonEncode(record));
     await req.response.close();

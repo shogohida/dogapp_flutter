@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../data/dogs_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
 import '../theme/app_theme.dart';
+
+final _yenFormat = NumberFormat('#,##0');
+String _formatYen(double amount) => '¥${_yenFormat.format(amount)}';
 
 class RecordsScreen extends StatelessWidget {
   final List<Dog> dogs;
@@ -22,6 +26,11 @@ class RecordsScreen extends StatelessWidget {
     return combined;
   }
 
+  double get _totalCost => _allRecords.fold(
+        0,
+        (sum, item) => sum + (item.record.cost ?? 0),
+      );
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -29,6 +38,12 @@ class RecordsScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
         Text(l10n.recordsTitle, style: AppText.display),
+        const SizedBox(height: 4),
+        if (_totalCost > 0)
+          Text(
+            l10n.totalCost(_formatYen(_totalCost)),
+            style: AppText.bodySoft,
+          ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -82,9 +97,19 @@ class RecordsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Text(
-                      '${item.record.date.month}/${item.record.date.day}',
-                      style: AppText.monoCaption,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (item.record.cost != null)
+                          Text(
+                            _formatYen(item.record.cost!),
+                            style: AppText.mono,
+                          ),
+                        Text(
+                          '${item.record.date.month}/${item.record.date.day}',
+                          style: AppText.monoCaption,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -121,6 +146,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
   late String _dogId = widget.dogs.first.id;
   RecordType _type = RecordType.vaccine;
   final _noteController = TextEditingController();
+  final _costController = TextEditingController();
   bool _saving = false;
   String? _error;
 
@@ -134,6 +160,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
   @override
   void dispose() {
     _noteController.dispose();
+    _costController.dispose();
     super.dispose();
   }
 
@@ -183,8 +210,16 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           ),
           const SizedBox(height: 10),
           TextField(
+            key: const Key('recordNoteField'),
             controller: _noteController,
             decoration: _fieldDecoration(hint: l10n.noteOptional),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const Key('recordCostField'),
+            controller: _costController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: _fieldDecoration(hint: l10n.costOptional),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
@@ -220,6 +255,16 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
 
   Future<void> _save(
       AppLocalizations l10n, Map<RecordType, String> typeLabels) async {
+    final costText = _costController.text.trim();
+    double? cost;
+    if (costText.isNotEmpty) {
+      cost = double.tryParse(costText);
+      if (cost == null || cost < 0) {
+        setState(() => _error = l10n.invalidCost);
+        return;
+      }
+    }
+
     setState(() {
       _saving = true;
       _error = null;
@@ -228,7 +273,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
     final label = note.isEmpty ? typeLabels[_type]! : note;
     try {
       await widget.repository
-          .addRecord(dogId: _dogId, type: _type, label: label);
+          .addRecord(dogId: _dogId, type: _type, label: label, cost: cost);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = l10n.saveFailed('$e'));

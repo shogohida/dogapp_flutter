@@ -1,8 +1,14 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
+import '../services/share_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/dog_avatar.dart';
+import '../widgets/dog_share_card.dart';
 import '../widgets/weight_chart.dart';
 
 /// 犬一覧・プロフィールをまとめて扱う画面。
@@ -11,7 +17,10 @@ import '../widgets/weight_chart.dart';
 class DogsTabScreen extends StatefulWidget {
   final List<Dog> dogs;
 
-  const DogsTabScreen({super.key, required this.dogs});
+  /// テストからプロフィールカードのシェア処理をフェイクに差し替えるために公開している。
+  final Future<void> Function(Uint8List pngBytes, String dogName)? shareImage;
+
+  const DogsTabScreen({super.key, required this.dogs, this.shareImage});
 
   @override
   State<DogsTabScreen> createState() => DogsTabScreenState();
@@ -32,7 +41,11 @@ class DogsTabScreenState extends State<DogsTabScreen> {
   Widget build(BuildContext context) {
     if (_selectedDogId != null) {
       final dog = widget.dogs.firstWhere((d) => d.id == _selectedDogId);
-      return DogProfileScreen(dog: dog, onBack: _back);
+      return DogProfileScreen(
+        dog: dog,
+        onBack: _back,
+        shareImage: widget.shareImage ?? shareDogProfileImage,
+      );
     }
     return DogsListScreen(
       dogs: widget.dogs,
@@ -94,14 +107,52 @@ class DogsListScreen extends StatelessWidget {
   }
 }
 
-class DogProfileScreen extends StatelessWidget {
+class DogProfileScreen extends StatefulWidget {
   final Dog dog;
   final VoidCallback onBack;
+  final Future<void> Function(Uint8List pngBytes, String dogName) shareImage;
 
-  const DogProfileScreen({super.key, required this.dog, required this.onBack});
+  const DogProfileScreen({
+    super.key,
+    required this.dog,
+    required this.onBack,
+    required this.shareImage,
+  });
+
+  @override
+  State<DogProfileScreen> createState() => _DogProfileScreenState();
+}
+
+class _DogProfileScreenState extends State<DogProfileScreen> {
+  final _shareCardKey = GlobalKey();
+  bool _sharing = false;
+
+  Future<void> _share() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _sharing = true);
+    try {
+      final boundary = _shareCardKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      await widget.shareImage(
+        byteData!.buffer.asUint8List(),
+        widget.dog.name,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.shareFailed('$e'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final dog = widget.dog;
     final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
@@ -109,29 +160,33 @@ class DogProfileScreen extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: onBack,
+              onPressed: widget.onBack,
               icon: const Icon(Icons.chevron_left, color: AppColors.ink),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
             const SizedBox(width: 4),
-            Text(dog.name, style: AppText.display),
+            Expanded(child: Text(dog.name, style: AppText.display)),
+            IconButton(
+              key: const Key('shareProfileButton'),
+              onPressed: _sharing ? null : _share,
+              icon: _sharing
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.ios_share, color: AppColors.ink),
+              tooltip: l10n.shareProfile,
+            ),
           ],
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            DogAvatar(dog: dog, size: 64),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(dog.breed, style: AppText.caption),
-                Text(l10n.dogInfoLine(dog.color, dog.ageInYears(2026)),
-                    style: AppText.caption),
-              ],
-            ),
-          ],
+        Center(
+          child: RepaintBoundary(
+            key: _shareCardKey,
+            child: DogShareCard(dog: dog),
+          ),
         ),
         const SizedBox(height: 24),
         Text(l10n.weightHistory, style: AppText.eyebrow),

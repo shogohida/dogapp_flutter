@@ -30,7 +30,13 @@
 
   "dogsTitle": "犬たち",
   "weightHistory": "体重推移",
+  "currentWeight": "体重",
   "recordsTitle": "記録",
+  "shareProfile": "プロフィールをシェア",
+  "shareFailed": "シェアに失敗しました: {error}",
+  "@shareFailed": {
+    "placeholders": {"error": {"type": "String"}}
+  },
   "breedColorLine": "{breed} ・ {color}",
   "@breedColorLine": {
     "placeholders": {

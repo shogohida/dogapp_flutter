@@ -188,11 +188,29 @@ abstract class AppLocalizations {
   /// **'体重推移'**
   String get weightHistory;
 
+  /// No description provided for @currentWeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'体重'**
+  String get currentWeight;
+
   /// No description provided for @recordsTitle.
   ///
   /// In ja, this message translates to:
   /// **'記録'**
   String get recordsTitle;
+
+  /// No description provided for @shareProfile.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィールをシェア'**
+  String get shareProfile;
+
+  /// No description provided for @shareFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'シェアに失敗しました: {error}'**
+  String shareFailed(String error);
 
   /// No description provided for @breedColorLine.
   ///

@@ -58,7 +58,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightHistory => 'Weight History';
 
   @override
+  String get currentWeight => 'Weight';
+
+  @override
   String get recordsTitle => 'Records';
+
+  @override
+  String get shareProfile => 'Share profile';
+
+  @override
+  String shareFailed(String error) {
+    return 'Failed to share: $error';
+  }
 
   @override
   String breedColorLine(String breed, String color) {

@@ -20,7 +20,10 @@
 
   "dogsTitle": "Dogs",
   "weightHistory": "Weight History",
+  "currentWeight": "Weight",
   "recordsTitle": "Records",
+  "shareProfile": "Share profile",
+  "shareFailed": "Failed to share: {error}",
   "breedColorLine": "{breed} · {color}",
 
   "healthCheckTitle": "Health Check",

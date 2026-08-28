@@ -16,6 +16,7 @@ Future<void> _pumpApp(
   WidgetTester tester, {
   Future<Uint8List?> Function(BuildContext context)? pickImage,
   Future<XFile?> Function(BuildContext context)? pickVideo,
+  Future<void> Function(Uint8List pngBytes, String dogName)? shareImage,
 }) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1.0;
@@ -36,6 +37,7 @@ Future<void> _pumpApp(
     apiClient: FakeDogappApiClient(),
     pickImage: pickImage,
     pickVideo: pickVideo,
+    shareImage: shareImage,
   ));
   await tester.pump(); // loadDogs()の完了を待つ
 }
@@ -77,7 +79,50 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('体重推移'), findsOneWidget);
+    // シェアカードの分だけ縦に長くなり、記録一覧は初期ビューポート外にあるため
+    // 見えるようにスクロールしてから確認する。
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
     expect(find.text('混合ワクチン接種'), findsOneWidget);
+  });
+
+  testWidgets('プロフィール画面でシェアボタンをタップするとカード画像がシェア処理に渡される', (tester) async {
+    // ネイティブの共有シートはテスト環境で動かないため、フェイクに差し替えて
+    // 「どんなバイト列(PNG)・どの犬の名前で呼ばれたか」だけを検証する。
+    Uint8List? sharedBytes;
+    String? sharedDogName;
+    await _pumpApp(
+      tester,
+      shareImage: (bytes, dogName) async {
+        sharedBytes = bytes;
+        sharedDogName = dogName;
+      },
+    );
+
+    await tester.tap(find.text('犬たち').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(InkWell, 'レオ'));
+    await tester.pumpAndSettle();
+
+    // RenderRepaintBoundary.toImage()/toByteData()は実際のラスタライズ・PNG
+    // エンコードを伴う非同期処理のため、フェイクのタイマーではなく実際の
+    // 非同期ゲートで待つ必要がある(runAsync)。ただしpumpAndSettle()のように
+    // pump()を連続で呼び続けると、そのラスタライズ処理自体が完了する隙が
+    // なくなり(pumpAndSettleがタイムアウトするまで)完了しないため、
+    // pump()は呼ばずに実時間でポーリングして完了を待つ。
+    await tester.tap(find.byKey(const Key('shareProfileButton')));
+    await tester.pump();
+    await tester.runAsync(() async {
+      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      while (sharedDogName == null && DateTime.now().isBefore(deadline)) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pumpAndSettle();
+
+    expect(sharedDogName, 'レオ');
+    expect(sharedBytes, isNotNull);
+    expect(sharedBytes!.isNotEmpty, isTrue);
   });
 
   testWidgets('ホーム画面のレオカードをタップすると犬たちタブのプロフィールに直接遷移する', (tester) async {

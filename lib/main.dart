@@ -20,6 +20,7 @@ class DogHealthApp extends StatelessWidget {
   final DogappApiClient? apiClient;
   final Future<Uint8List?> Function(BuildContext context)? pickImage;
   final Future<XFile?> Function(BuildContext context)? pickVideo;
+  final Future<void> Function(Uint8List pngBytes, String dogName)? shareImage;
   final LocationService? locationService;
 
   const DogHealthApp({
@@ -27,6 +28,7 @@ class DogHealthApp extends StatelessWidget {
     this.apiClient,
     this.pickImage,
     this.pickVideo,
+    this.shareImage,
     this.locationService,
   });
 
@@ -44,6 +46,7 @@ class DogHealthApp extends StatelessWidget {
             client: apiClient, locationService: locationService),
         pickImage: pickImage,
         pickVideo: pickVideo,
+        shareImage: shareImage,
       ),
     );
   }

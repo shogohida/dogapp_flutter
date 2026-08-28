@@ -58,7 +58,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get weightHistory => '体重推移';
 
   @override
+  String get currentWeight => '体重';
+
+  @override
   String get recordsTitle => '記録';
+
+  @override
+  String get shareProfile => 'プロフィールをシェア';
+
+  @override
+  String shareFailed(String error) {
+    return 'シェアに失敗しました: $error';
+  }
 
   @override
   String breedColorLine(String breed, String color) {

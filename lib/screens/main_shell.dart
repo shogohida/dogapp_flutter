@@ -19,12 +19,16 @@ class MainShell extends StatefulWidget {
   final Future<Uint8List?> Function(BuildContext context)? pickImage;
   final Future<XFile?> Function(BuildContext context)? pickVideo;
 
+  /// テストから犬プロフィールカードのシェア処理をフェイクに差し替えるために公開している。
+  final Future<void> Function(Uint8List pngBytes, String dogName)? shareImage;
+
   const MainShell({
     super.key,
     required this.repository,
     required this.walksRepository,
     this.pickImage,
     this.pickVideo,
+    this.shareImage,
   });
 
   @override
@@ -97,7 +101,11 @@ class _MainShellState extends State<MainShell> {
               index: _tabIndex,
               children: [
                 HomeScreen(dogs: repo.dogs, onSelectDog: _openDogFromHome),
-                DogsTabScreen(key: _dogsTabKey, dogs: repo.dogs),
+                DogsTabScreen(
+                  key: _dogsTabKey,
+                  dogs: repo.dogs,
+                  shareImage: widget.shareImage,
+                ),
                 AICheckScreen(
                   dogs: repo.dogs,
                   repository: repo,

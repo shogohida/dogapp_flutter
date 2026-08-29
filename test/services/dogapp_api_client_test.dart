@@ -229,6 +229,27 @@ void main() {
     });
   });
 
+  group('HttpDogappApiClient.addWeightEntry', () {
+    test('month/kgをPOSTし、作成されたWeightEntryを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/dogs/leo/weight');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['month'], '9月');
+        expect(body['kg'], 25.6);
+        return _jsonResponse({'month': '9月', 'kg': 25.6}, 201);
+      });
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final entry =
+          await client.addWeightEntry(dogId: 'leo', month: '9月', kg: 25.6);
+
+      expect(entry.month, '9月');
+      expect(entry.kg, 25.6);
+    });
+  });
+
   group('HttpDogappApiClient.runAiCheck', () {
     test('画像をBase64化してPOSTし、AICheckResultを返す', () async {
       final mock = MockClient((request) async {

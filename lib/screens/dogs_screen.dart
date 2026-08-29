@@ -224,7 +224,22 @@ class _DogProfileScreenState extends State<DogProfileScreen> {
           ),
         ),
         const SizedBox(height: 24),
-        Text(l10n.weightHistory, style: AppText.eyebrow),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.weightHistory, style: AppText.eyebrow),
+            IconButton(
+              key: const Key('addWeightButton'),
+              onPressed: () =>
+                  _showAddWeightSheet(context, dog, widget.repository),
+              icon: const Icon(Icons.add_circle_outline, size: 20),
+              color: AppColors.ink,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: l10n.addWeight,
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
@@ -419,6 +434,181 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = l10n.updateDogFailed('$e'));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  InputDecoration _fieldDecoration({String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+    );
+  }
+}
+
+/// 日付から体重グラフのX軸ラベルを作る(既存のシードデータ・
+/// dogapp-apiの`month`はローカライズ対象外の自由入力文字列のため、
+/// ロケールに応じてここで組み立てる)。
+String _monthLabel(DateTime date, String languageCode) {
+  if (languageCode == 'ja') return '${date.month}月';
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', //
+  ];
+  return months[date.month - 1];
+}
+
+void _showAddWeightSheet(
+    BuildContext context, Dog dog, DogsRepository repository) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.paper,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    isScrollControlled: true,
+    builder: (context) => _AddWeightSheet(dog: dog, repository: repository),
+  );
+}
+
+class _AddWeightSheet extends StatefulWidget {
+  final Dog dog;
+  final DogsRepository repository;
+
+  const _AddWeightSheet({required this.dog, required this.repository});
+
+  @override
+  State<_AddWeightSheet> createState() => _AddWeightSheetState();
+}
+
+class _AddWeightSheetState extends State<_AddWeightSheet> {
+  final _kgController = TextEditingController();
+  DateTime _date = DateTime.now();
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _kgController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                  child: Text(l10n.addWeight, style: AppText.displaySmall)),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: AppColors.ink),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            key: const Key('weightKgField'),
+            controller: _kgController,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: _fieldDecoration(hint: l10n.weightKgLabel),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            key: const Key('weightDateField'),
+            borderRadius: BorderRadius.circular(12),
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _date,
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) setState(() => _date = picked);
+            },
+            child: InputDecorator(
+              decoration: _fieldDecoration(hint: l10n.date),
+              child: Text(
+                '${_date.year}/${_date.month}/${_date.day}',
+                style: AppText.body,
+              ),
+            ),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(_error!,
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.concernBorder)),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : () => _save(l10n),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.ink,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(l10n.save, style: const TextStyle(fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save(AppLocalizations l10n) async {
+    final kg = double.tryParse(_kgController.text.trim());
+    if (kg == null || kg <= 0) {
+      setState(() => _error = l10n.invalidWeight);
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      final languageCode = Localizations.localeOf(context).languageCode;
+      await widget.repository.addWeight(
+        dogId: widget.dog.id,
+        month: _monthLabel(_date, languageCode),
+        kg: kg,
+      );
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) setState(() => _error = l10n.saveFailed('$e'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

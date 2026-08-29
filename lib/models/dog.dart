@@ -162,6 +162,17 @@ class Dog {
         records: records,
       );
 
+  Dog copyWithWeightHistory(List<WeightEntry> weightHistory) => Dog(
+        id: id,
+        name: name,
+        breed: breed,
+        color: color,
+        birthYear: birthYear,
+        accent: accent,
+        weightHistory: weightHistory,
+        records: records,
+      );
+
   Dog copyWithProfile({
     required String name,
     required String breed,

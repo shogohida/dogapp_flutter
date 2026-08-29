@@ -262,6 +262,32 @@ Future<void> _handle(HttpRequest req) async {
     return;
   }
 
+  // POST /dogs/{dogId}/weight
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'weight') {
+    if (!_authorized(req)) return _reject401(req);
+    final dogId = segments[1];
+    final dog = _dogs.firstWhere((d) => d['id'] == dogId, orElse: () => {});
+    if (dog.isEmpty) {
+      req.response.statusCode = 404;
+      req.response.write(jsonEncode({'error': 'dog not found: $dogId'}));
+      await req.response.close();
+      return;
+    }
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final entry = {'month': body['month'], 'kg': body['kg']};
+    // 既存の体重リストは(シードデータ由来で)Map<String, Object>としか
+    // 互換性がない場合があるため、.add()で直接足さず新しいリストで置き換える。
+    dog['weightHistory'] = [...(dog['weightHistory'] as List), entry];
+    req.response.statusCode = 201;
+    req.response.write(jsonEncode(entry));
+    await req.response.close();
+    return;
+  }
+
   // POST /dogs/{dogId}/ai-check
   if (req.method == 'POST' &&
       segments.length == 3 &&

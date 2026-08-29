@@ -354,4 +354,24 @@ void main() {
 
     expect(find.text('ココ'), findsWidgets);
   });
+
+  testWidgets('プロフィール画面で体重を記録するとグラフに反映される', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('犬たち').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(InkWell, 'レオ'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('addWeightButton')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('weightKgField')), '25.6');
+    await tester.tap(find.text('保存する'));
+    await tester.pumpAndSettle();
+
+    // 保存に成功するとモーダルが閉じる(失敗時はエラー文言とともに開いたまま)。
+    expect(find.byKey(const Key('weightKgField')), findsNothing);
+    expect(find.text('体重推移'), findsOneWidget);
+  });
 }

@@ -108,6 +108,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentWeight => 'Weight';
 
   @override
+  String get addWeight => 'Record weight';
+
+  @override
+  String get weightKgLabel => 'Weight (kg)';
+
+  @override
+  String get invalidWeight => 'Please enter a valid weight (kg)';
+
+  @override
   String get recordsTitle => 'Records';
 
   @override

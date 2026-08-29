@@ -103,6 +103,7 @@ JSONスキーマと完全に一致させてある。`/auth/*`以外は`Authoriza
 | GET | `/dogs` | 自分の犬一覧の取得 |
 | POST | `/dogs` | 犬を追加(呼び出し元が所有者になる) |
 | PATCH | `/dogs/{dogId}` | 犬のプロフィール(名前・犬種・毛色・生まれた年)を更新 |
+| POST | `/dogs/{dogId}/weight` | 体重記録を追加 |
 | POST | `/dogs/{dogId}/ai-check` | 写真(Base64)を送りAI健康チェック結果を取得 |
 | POST | `/dogs/{dogId}/gait-check` | 短い動画(multipart/form-data)を送り歩行の異常を判定 |
 | POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加(種別は自由入力) |

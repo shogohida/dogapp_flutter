@@ -108,6 +108,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get currentWeight => '体重';
 
   @override
+  String get addWeight => '体重を記録';
+
+  @override
+  String get weightKgLabel => '体重(kg)';
+
+  @override
+  String get invalidWeight => '正しい体重(kg)を入力してください';
+
+  @override
   String get recordsTitle => '記録';
 
   @override

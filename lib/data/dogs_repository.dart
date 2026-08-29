@@ -92,6 +92,20 @@ class DogsRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> addWeight({
+    required String dogId,
+    required String month,
+    required double kg,
+  }) async {
+    final entry =
+        await _client.addWeightEntry(dogId: dogId, month: month, kg: kg);
+    final index = dogs.indexWhere((d) => d.id == dogId);
+    if (index == -1) return;
+    dogs[index] = dogs[index]
+        .copyWithWeightHistory([...dogs[index].weightHistory, entry]);
+    notifyListeners();
+  }
+
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,

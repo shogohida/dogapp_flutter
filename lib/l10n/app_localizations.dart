@@ -284,6 +284,24 @@ abstract class AppLocalizations {
   /// **'体重'**
   String get currentWeight;
 
+  /// No description provided for @addWeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'体重を記録'**
+  String get addWeight;
+
+  /// No description provided for @weightKgLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'体重(kg)'**
+  String get weightKgLabel;
+
+  /// No description provided for @invalidWeight.
+  ///
+  /// In ja, this message translates to:
+  /// **'正しい体重(kg)を入力してください'**
+  String get invalidWeight;
+
   /// No description provided for @recordsTitle.
   ///
   /// In ja, this message translates to:

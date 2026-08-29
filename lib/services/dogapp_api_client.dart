@@ -43,6 +43,12 @@ abstract class DogappApiClient {
     required int birthYear,
   });
 
+  Future<WeightEntry> addWeightEntry({
+    required String dogId,
+    required String month,
+    required double kg,
+  });
+
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
@@ -210,6 +216,25 @@ class HttpDogappApiClient implements DogappApiClient {
         )
         .timeout(_timeout);
     _checkStatus(res);
+  }
+
+  @override
+  Future<WeightEntry> addWeightEntry({
+    required String dogId,
+    required String month,
+    required double kg,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId/weight');
+    final res = await _client
+        .post(
+          uri,
+          headers: _headers(),
+          body: jsonEncode({'month': month, 'kg': kg}),
+        )
+        .timeout(_timeout);
+    _checkStatus(res);
+    return WeightEntry.fromJson(
+        jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
   }
 
   @override

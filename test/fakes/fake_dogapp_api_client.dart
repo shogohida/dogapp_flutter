@@ -56,6 +56,15 @@ class FakeDogappApiClient implements DogappApiClient {
   }) async {}
 
   @override
+  Future<WeightEntry> addWeightEntry({
+    required String dogId,
+    required String month,
+    required double kg,
+  }) async {
+    return WeightEntry(month: month, kg: kg);
+  }
+
+  @override
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,

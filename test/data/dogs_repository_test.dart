@@ -28,6 +28,7 @@ class _StubApiClient implements DogappApiClient {
     this.upcomingError,
     this.createUpcomingResult,
     this.createDogResult,
+    this.addWeightResult,
   });
 
   final List<Dog>? dogsResult;
@@ -37,6 +38,7 @@ class _StubApiClient implements DogappApiClient {
   final Object? upcomingError;
   final UpcomingItem? createUpcomingResult;
   final Dog? createDogResult;
+  final WeightEntry? addWeightResult;
 
   @override
   Future<AuthResult> signup(
@@ -88,6 +90,15 @@ class _StubApiClient implements DogappApiClient {
     required String color,
     required int birthYear,
   }) async {}
+
+  @override
+  Future<WeightEntry> addWeightEntry({
+    required String dogId,
+    required String month,
+    required double kg,
+  }) async {
+    return addWeightResult ?? WeightEntry(month: month, kg: kg);
+  }
 
   @override
   Future<AICheckResult> runAiCheck(
@@ -276,6 +287,18 @@ void main() {
 
     expect(repo.dogs.map((d) => d.id), ['leo', 'noa']);
     expect(repo.dogs.last.name, 'ノア');
+  });
+
+  test('addWeightは該当する犬のweightHistoryだけを更新する', () async {
+    const newEntry = WeightEntry(month: '9月', kg: 25.6);
+    final repo = DogsRepository(
+      client: _StubApiClient(dogsResult: [_leo], addWeightResult: newEntry),
+    );
+    await repo.loadDogs();
+
+    await repo.addWeight(dogId: 'leo', month: '9月', kg: 25.6);
+
+    expect(repo.dogs.single.weightHistory, [newEntry]);
   });
 
   test('notifyListenersがloadDogsの開始と終了で呼ばれる', () async {

@@ -100,10 +100,15 @@ class _MainShellState extends State<MainShell> {
             return IndexedStack(
               index: _tabIndex,
               children: [
-                HomeScreen(dogs: repo.dogs, onSelectDog: _openDogFromHome),
+                HomeScreen(
+                  dogs: repo.dogs,
+                  repository: repo,
+                  onSelectDog: _openDogFromHome,
+                ),
                 DogsTabScreen(
                   key: _dogsTabKey,
                   dogs: repo.dogs,
+                  repository: repo,
                   shareImage: widget.shareImage,
                 ),
                 AICheckScreen(

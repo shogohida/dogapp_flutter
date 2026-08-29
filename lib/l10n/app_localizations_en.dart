@@ -47,6 +47,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upcoming => 'Upcoming';
 
   @override
+  String get addUpcoming => 'Add plan';
+
+  @override
+  String get noUpcomingItems => 'No upcoming plans';
+
+  @override
+  String get date => 'Date';
+
+  @override
   String dogInfoLine(String color, int age) {
     return '$color · ${age}y';
   }
@@ -65,6 +74,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareProfile => 'Share profile';
+
+  @override
+  String get editProfile => 'Edit profile';
+
+  @override
+  String get dogNameLabel => 'Name';
+
+  @override
+  String get dogBreedLabel => 'Breed';
+
+  @override
+  String get dogColorLabel => 'Color';
+
+  @override
+  String get dogBirthYearLabel => 'Birth year';
+
+  @override
+  String get invalidBirthYear => 'Please enter a valid birth year';
+
+  @override
+  String get profileFieldsRequired => 'Please fill in name, breed, and color';
+
+  @override
+  String updateDogFailed(String error) {
+    return 'Couldn\'t update profile: $error';
+  }
 
   @override
   String shareFailed(String error) {
@@ -145,6 +180,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addRecord => 'Add Record';
+
+  @override
+  String get recordTypeHint => 'Category (e.g. Vaccine)';
+
+  @override
+  String get recordTypeRequired => 'Please enter a category';
 
   @override
   String get noteOptional => 'Note (optional)';

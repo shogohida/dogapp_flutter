@@ -13,7 +13,7 @@ void main() {
   test('HealthRecord.fromJson/toJsonは対称(費用あり)', () {
     final record = HealthRecord(
       id: '1',
-      type: RecordType.grooming,
+      type: 'grooming',
       label: 'トリミング',
       date: DateTime.utc(2026, 8, 15),
       cost: 6500,
@@ -29,7 +29,7 @@ void main() {
   test('HealthRecord.fromJson/toJsonは対称(費用なし)', () {
     final record = HealthRecord(
       id: '1',
-      type: RecordType.aiCheck,
+      type: aiCheckRecordType,
       label: '健康チェック: 問題なし',
       date: DateTime.utc(2026, 8, 15),
     );
@@ -51,7 +51,7 @@ void main() {
       records: [
         HealthRecord(
             id: '1',
-            type: RecordType.vet,
+            type: 'vet',
             label: '定期健診',
             date: DateTime.utc(2026, 8, 15)),
       ],
@@ -79,7 +79,7 @@ void main() {
     );
     final newRecord = HealthRecord(
         id: '1',
-        type: RecordType.vaccine,
+        type: 'vaccine',
         label: 'ワクチン',
         date: DateTime.utc(2026, 1, 1));
 
@@ -89,6 +89,22 @@ void main() {
     expect(updated.name, dog.name);
     expect(updated.records, [newRecord]);
     expect(dog.records, isEmpty); // 元のDogはimmutableのまま
+  });
+
+  test('UpcomingItem.fromJson/toJsonは対称', () {
+    final item = UpcomingItem(
+      id: '1',
+      dogId: 'leo',
+      label: '次回トリミング予約',
+      date: DateTime.utc(2026, 9, 1),
+      type: RecordType.grooming,
+    );
+    final restored = UpcomingItem.fromJson(item.toJson());
+    expect(restored.id, item.id);
+    expect(restored.dogId, item.dogId);
+    expect(restored.label, item.label);
+    expect(restored.date, item.date);
+    expect(restored.type, item.type);
   });
 
   test('AICheckResult.fromJson', () {

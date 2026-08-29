@@ -170,6 +170,24 @@ abstract class AppLocalizations {
   /// **'今後の予定'**
   String get upcoming;
 
+  /// No description provided for @addUpcoming.
+  ///
+  /// In ja, this message translates to:
+  /// **'予定を追加'**
+  String get addUpcoming;
+
+  /// No description provided for @noUpcomingItems.
+  ///
+  /// In ja, this message translates to:
+  /// **'今後の予定はありません'**
+  String get noUpcomingItems;
+
+  /// No description provided for @date.
+  ///
+  /// In ja, this message translates to:
+  /// **'日付'**
+  String get date;
+
   /// No description provided for @dogInfoLine.
   ///
   /// In ja, this message translates to:
@@ -205,6 +223,54 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'プロフィールをシェア'**
   String get shareProfile;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィールを編集'**
+  String get editProfile;
+
+  /// No description provided for @dogNameLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前'**
+  String get dogNameLabel;
+
+  /// No description provided for @dogBreedLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'犬種'**
+  String get dogBreedLabel;
+
+  /// No description provided for @dogColorLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'毛色'**
+  String get dogColorLabel;
+
+  /// No description provided for @dogBirthYearLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'生まれた年'**
+  String get dogBirthYearLabel;
+
+  /// No description provided for @invalidBirthYear.
+  ///
+  /// In ja, this message translates to:
+  /// **'正しい生まれた年を入力してください'**
+  String get invalidBirthYear;
+
+  /// No description provided for @profileFieldsRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'名前・犬種・毛色を入力してください'**
+  String get profileFieldsRequired;
+
+  /// No description provided for @updateDogFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'プロフィールの更新に失敗しました: {error}'**
+  String updateDogFailed(String error);
 
   /// No description provided for @shareFailed.
   ///
@@ -343,6 +409,18 @@ abstract class AppLocalizations {
   /// In ja, this message translates to:
   /// **'記録を追加'**
   String get addRecord;
+
+  /// No description provided for @recordTypeHint.
+  ///
+  /// In ja, this message translates to:
+  /// **'種別(例: ワクチン接種)'**
+  String get recordTypeHint;
+
+  /// No description provided for @recordTypeRequired.
+  ///
+  /// In ja, this message translates to:
+  /// **'種別を入力してください'**
+  String get recordTypeRequired;
 
   /// No description provided for @noteOptional.
   ///

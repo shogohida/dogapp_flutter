@@ -8,8 +8,20 @@ import 'package:dogapp/services/dogapp_api_client.dart';
 /// 実ネットワークに依存せずウィジェットテストを走らせるためのフェイク実装。
 /// 既存のモックデータ(mock_data.dart)をそのまま「サーバーからの応答」として返す。
 class FakeDogappApiClient implements DogappApiClient {
+  // 呼び出し側がリストの要素を入れ替える(DogsRepository.addRecord/updateDogなど)
+  // ことがあるため、共有のmockDogsそのものではなくコピーを返す。これを怠ると
+  // あるテストでの更新が同じプロセス内の後続テストに漏れてしまう。
   @override
-  Future<List<Dog>> fetchDogs(String ownerId) async => mockDogs;
+  Future<List<Dog>> fetchDogs(String ownerId) async => List.of(mockDogs);
+
+  @override
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {}
 
   @override
   Future<AICheckResult> runAiCheck({
@@ -35,7 +47,7 @@ class FakeDogappApiClient implements DogappApiClient {
   @override
   Future<HealthRecord> createRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   }) async {
@@ -66,6 +78,26 @@ class FakeDogappApiClient implements DogappApiClient {
       duration: duration,
       distanceMeters: distanceMeters,
       points: points,
+    );
+  }
+
+  @override
+  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async =>
+      mockUpcoming;
+
+  @override
+  Future<UpcomingItem> createUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
+  }) async {
+    return UpcomingItem(
+      id: 'fake-upcoming-id',
+      dogId: dogId,
+      label: label,
+      date: date,
+      type: type,
     );
   }
 }

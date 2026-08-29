@@ -81,6 +81,35 @@ final _dogs = [
 // dogId -> 散歩記録のリスト。プロセスを再起動すると消える簡易ストレージ。
 final _walks = <String, List<Map<String, dynamic>>>{};
 
+// dogId -> 今後の予定のリスト。
+final _upcoming = <String, List<Map<String, dynamic>>>{
+  'leo': [
+    {
+      'id': '1',
+      'dogId': 'leo',
+      'type': 'grooming',
+      'label': '次回トリミング予約',
+      'date': '2026-09-01T00:00:00Z',
+    },
+    {
+      'id': '3',
+      'dogId': 'leo',
+      'type': 'vet',
+      'label': '定期健診フォローアップ',
+      'date': '2026-09-10T00:00:00Z',
+    },
+  ],
+  'noa': [
+    {
+      'id': '2',
+      'dogId': 'noa',
+      'type': 'medication',
+      'label': 'フィラリア予防投薬',
+      'date': '2026-08-28T00:00:00Z',
+    },
+  ],
+};
+
 final _aiResults = [
   {
     'level': 'normal',
@@ -154,6 +183,27 @@ Future<void> _handle(HttpRequest req) async {
       segments[0] == 'owners' &&
       segments[2] == 'dogs') {
     req.response.write(jsonEncode(_dogs));
+    await req.response.close();
+    return;
+  }
+
+  // PATCH /dogs/{dogId}
+  if (req.method == 'PATCH' && segments.length == 2 && segments[0] == 'dogs') {
+    final dogId = segments[1];
+    final dog = _dogs.firstWhere((d) => d['id'] == dogId, orElse: () => {});
+    if (dog.isEmpty) {
+      req.response.statusCode = 404;
+      req.response.write(jsonEncode({'error': 'dog not found: $dogId'}));
+      await req.response.close();
+      return;
+    }
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    dog['name'] = body['name'];
+    dog['breed'] = body['breed'];
+    dog['color'] = body['color'];
+    dog['birthYear'] = body['birthYear'];
+    req.response.write(jsonEncode(dog));
     await req.response.close();
     return;
   }
@@ -232,6 +282,39 @@ Future<void> _handle(HttpRequest req) async {
     };
     _walks.putIfAbsent(dogId, () => []).insert(0, walk);
     req.response.write(jsonEncode(walk));
+    await req.response.close();
+    return;
+  }
+
+  // GET /owners/{ownerId}/upcoming
+  if (req.method == 'GET' &&
+      segments.length == 3 &&
+      segments[0] == 'owners' &&
+      segments[2] == 'upcoming') {
+    final all = _upcoming.values.expand((e) => e).toList()
+      ..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
+    req.response.write(jsonEncode(all));
+    await req.response.close();
+    return;
+  }
+
+  // POST /dogs/{dogId}/upcoming
+  if (req.method == 'POST' &&
+      segments.length == 3 &&
+      segments[0] == 'dogs' &&
+      segments[2] == 'upcoming') {
+    final dogId = segments[1];
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final item = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'dogId': dogId,
+      'type': body['type'],
+      'label': body['label'],
+      'date': body['date'],
+    };
+    _upcoming.putIfAbsent(dogId, () => []).add(item);
+    req.response.write(jsonEncode(item));
     await req.response.close();
     return;
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 記録の種別。dogapp-api の model.RecordType と対応させている。
+/// 今後の予定の種別。dogapp-api の model.RecordType と対応させている。
 enum RecordType { vaccine, grooming, vet, medication, aiCheck }
 
 extension RecordTypeIcon on RecordType {
@@ -17,6 +17,29 @@ extension RecordTypeIcon on RecordType {
       case RecordType.aiCheck:
         return Icons.camera_alt_outlined;
     }
+  }
+}
+
+/// AIチェックが自動で記録を追加するときのHealthRecord.type値。
+/// 通常の記録は種別を自由入力するため、既知の値だけアイコンを出し分ける。
+const String aiCheckRecordType = 'aiCheck';
+
+/// HealthRecord.typeは自由入力の文字列なので、既知の値(AIチェック由来)だけ
+/// 専用アイコンを出し、それ以外は汎用アイコンにフォールバックする。
+IconData iconForRecordType(String type) {
+  switch (type) {
+    case 'vaccine':
+      return Icons.vaccines_outlined;
+    case 'grooming':
+      return Icons.content_cut;
+    case 'vet':
+      return Icons.medical_services_outlined;
+    case 'medication':
+      return Icons.calendar_month_outlined;
+    case aiCheckRecordType:
+      return Icons.camera_alt_outlined;
+    default:
+      return Icons.event_note_outlined;
   }
 }
 
@@ -38,7 +61,9 @@ class WeightEntry {
 
 class HealthRecord {
   final String id;
-  final RecordType type;
+  // 種別は自由入力(例: "ワクチン接種", "爪切り")。AIチェック由来の記録だけ
+  // aiCheckRecordType固定値が入る。
+  final String type;
   final String label;
   final DateTime date;
   // 円単位。任意項目(AIチェック結果など費用が発生しない記録もあるため)。
@@ -55,7 +80,7 @@ class HealthRecord {
   factory HealthRecord.fromJson(Map<String, dynamic> json) {
     return HealthRecord(
       id: json['id'] as String,
-      type: RecordType.values.byName(json['type'] as String),
+      type: json['type'] as String,
       label: json['label'] as String,
       date: DateTime.parse(json['date'] as String),
       cost: (json['cost'] as num?)?.toDouble(),
@@ -64,7 +89,7 @@ class HealthRecord {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'type': type.name,
+        'type': type,
         'label': label,
         'date': date.toIso8601String(),
         if (cost != null) 'cost': cost,
@@ -136,6 +161,23 @@ class Dog {
         weightHistory: weightHistory,
         records: records,
       );
+
+  Dog copyWithProfile({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) =>
+      Dog(
+        id: id,
+        name: name,
+        breed: breed,
+        color: color,
+        birthYear: birthYear,
+        accent: accent,
+        weightHistory: weightHistory,
+        records: records,
+      );
 }
 
 /// 予定(今後のリマインダー)
@@ -153,6 +195,24 @@ class UpcomingItem {
     required this.date,
     required this.type,
   });
+
+  factory UpcomingItem.fromJson(Map<String, dynamic> json) {
+    return UpcomingItem(
+      id: json['id'] as String,
+      dogId: json['dogId'] as String,
+      label: json['label'] as String,
+      date: DateTime.parse(json['date'] as String),
+      type: RecordType.values.byName(json['type'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'dogId': dogId,
+        'label': label,
+        'date': date.toIso8601String(),
+        'type': type.name,
+      };
 }
 
 /// AI健康チェックの結果レベル。安全のためこの3値に固定する

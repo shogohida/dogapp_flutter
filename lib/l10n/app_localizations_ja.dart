@@ -47,6 +47,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get upcoming => '今後の予定';
 
   @override
+  String get addUpcoming => '予定を追加';
+
+  @override
+  String get noUpcomingItems => '今後の予定はありません';
+
+  @override
+  String get date => '日付';
+
+  @override
   String dogInfoLine(String color, int age) {
     return '$color ・ $age歳';
   }
@@ -65,6 +74,32 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get shareProfile => 'プロフィールをシェア';
+
+  @override
+  String get editProfile => 'プロフィールを編集';
+
+  @override
+  String get dogNameLabel => '名前';
+
+  @override
+  String get dogBreedLabel => '犬種';
+
+  @override
+  String get dogColorLabel => '毛色';
+
+  @override
+  String get dogBirthYearLabel => '生まれた年';
+
+  @override
+  String get invalidBirthYear => '正しい生まれた年を入力してください';
+
+  @override
+  String get profileFieldsRequired => '名前・犬種・毛色を入力してください';
+
+  @override
+  String updateDogFailed(String error) {
+    return 'プロフィールの更新に失敗しました: $error';
+  }
 
   @override
   String shareFailed(String error) {
@@ -145,6 +180,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get addRecord => '記録を追加';
+
+  @override
+  String get recordTypeHint => '種別(例: ワクチン接種)';
+
+  @override
+  String get recordTypeRequired => '種別を入力してください';
 
   @override
   String get noteOptional => 'メモ(任意)';

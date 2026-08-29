@@ -125,6 +125,27 @@ void main() {
     expect(sharedBytes!.isNotEmpty, isTrue);
   });
 
+  testWidgets('プロフィール画面で編集ボタンから名前を変更すると一覧・プロフィールに反映される',
+      (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('犬たち').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(InkWell, 'レオ'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('editProfileButton')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(const Key('editDogNameField')), 'レオ2');
+    await tester.tap(find.text('保存する'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('レオ2'), findsWidgets);
+    expect(find.text('レオ'), findsNothing);
+  });
+
   testWidgets('ホーム画面のレオカードをタップすると犬たちタブのプロフィールに直接遷移する', (tester) async {
     await _pumpApp(tester);
 
@@ -199,7 +220,7 @@ void main() {
     expect(find.text('歩行チェック: 特に気になる所見はありません'), findsOneWidget);
   });
 
-  testWidgets('記録タブで追加ボタンをタップするとモーダルが開き、2つのドロップダウンが表示される', (tester) async {
+  testWidgets('記録タブで追加ボタンをタップするとモーダルが開き、犬選択と種別入力が表示される', (tester) async {
     await _pumpApp(tester);
 
     await tester.tap(find.text('記録').last);
@@ -210,18 +231,14 @@ void main() {
     await tester.tap(find.text('記録を追加'));
     await tester.pumpAndSettle();
 
-    // find.byType(DropdownButtonFormField)はジェネリック型引数(<dynamic>)を
-    // 厳密一致で比較するため<String>/<RecordType>のインスタンスを拾えない。
-    // is判定を使うpredicateで型引数を問わずに数える。
-    final anyDropdown =
-        find.byWidgetPredicate((w) => w is DropdownButtonFormField);
+    // 犬選択のドロップダウンと、種別の自由入力フィールドが表示される。
     expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
-    expect(anyDropdown, findsNWidgets(2));
+    expect(find.byKey(const Key('recordTypeField')), findsOneWidget);
 
     // 閉じるボタンでモーダルが閉じることを確認
     await tester.tap(find.byIcon(Icons.close));
     await tester.pumpAndSettle();
-    expect(anyDropdown, findsNothing);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
   });
 
   testWidgets('記録追加時に費用を入力すると一覧・合計に反映される', (tester) async {
@@ -233,6 +250,7 @@ void main() {
     await tester.tap(find.text('記録を追加'));
     await tester.pumpAndSettle();
 
+    await tester.enterText(find.byKey(const Key('recordTypeField')), '通院');
     await tester.enterText(find.byKey(const Key('recordCostField')), '2500');
     await tester.tap(find.text('保存する'));
     await tester.pumpAndSettle();

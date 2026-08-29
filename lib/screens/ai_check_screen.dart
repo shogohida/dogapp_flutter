@@ -169,7 +169,7 @@ class _AICheckScreenState extends State<AICheckScreen> {
     try {
       await widget.repository.addRecord(
         dogId: _selectedDogId,
-        type: RecordType.aiCheck,
+        type: aiCheckRecordType,
         label: label,
       );
     } catch (e) {

@@ -13,6 +13,16 @@ class _UnusedApiClient implements DogappApiClient {
   Future<List<Dog>> fetchDogs(String ownerId) => throw UnimplementedError();
 
   @override
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) =>
+      throw UnimplementedError();
+
+  @override
   Future<AICheckResult> runAiCheck(
           {required String dogId, required Uint8List imageBytes}) =>
       throw UnimplementedError();
@@ -28,7 +38,7 @@ class _UnusedApiClient implements DogappApiClient {
   @override
   Future<HealthRecord> createRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   }) =>
@@ -45,6 +55,19 @@ class _UnusedApiClient implements DogappApiClient {
     required Duration duration,
     required double distanceMeters,
     required List<GeoPoint> points,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<UpcomingItem> createUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
   }) =>
       throw UnimplementedError();
 }

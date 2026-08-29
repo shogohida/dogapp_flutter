@@ -13,7 +13,7 @@ lib/
   theme/app_theme.dart       デザイントークン(色・タイポグラフィ)
   l10n/                      日本語(ja)・英語(en)のARBファイルと生成コード
   models/
-    dog.dart                 Dog, HealthRecord, WeightEntry, AICheckResult
+    dog.dart                 Dog, HealthRecord, WeightEntry, AICheckResult, UpcomingItem
     walk.dart                GeoPoint, WalkRoute, RecommendedCourse
   data/
     mock_data.dart           サンプルデータ(レオ・ノア) / フェイクテストの種データ
@@ -78,11 +78,14 @@ JSONスキーマと完全に一致させてある。
 | メソッド | パス | 用途 |
 |---|---|---|
 | GET | `/owners/{ownerId}/dogs` | 犬一覧の取得 |
+| PATCH | `/dogs/{dogId}` | 犬のプロフィール(名前・犬種・毛色・生まれた年)を更新 |
 | POST | `/dogs/{dogId}/ai-check` | 写真(Base64)を送りAI健康チェック結果を取得 |
 | POST | `/dogs/{dogId}/gait-check` | 短い動画(multipart/form-data)を送り歩行の異常を判定 |
 | POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加 |
 | GET | `/dogs/{dogId}/walks` | 散歩記録の一覧取得 |
 | POST | `/dogs/{dogId}/walks` | GPSで記録した散歩ルートの保存 |
+| GET | `/owners/{ownerId}/upcoming` | 今後の予定一覧の取得 |
+| POST | `/dogs/{dogId}/upcoming` | 今後の予定の追加 |
 
 ## 散歩GPS記録・おすすめコース
 

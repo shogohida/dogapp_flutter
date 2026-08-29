@@ -23,21 +23,21 @@ final List<Dog> mockDogs = [
     records: [
       HealthRecord(
         id: '1',
-        type: RecordType.vaccine,
+        type: 'vaccine',
         label: '混合ワクチン接種',
         date: DateTime(2026, 7, 12),
         cost: 8000,
       ),
       HealthRecord(
         id: '2',
-        type: RecordType.grooming,
+        type: 'grooming',
         label: 'トリミング(サマーカット)',
         date: DateTime(2026, 8, 2),
         cost: 6500,
       ),
       HealthRecord(
         id: '3',
-        type: RecordType.vet,
+        type: 'vet',
         label: '定期健診',
         date: DateTime(2026, 8, 15),
         cost: 4500,
@@ -62,14 +62,14 @@ final List<Dog> mockDogs = [
     records: [
       HealthRecord(
         id: '1',
-        type: RecordType.grooming,
+        type: 'grooming',
         label: 'トリミング(全身カット)',
         date: DateTime(2026, 8, 5),
         cost: 7000,
       ),
       HealthRecord(
         id: '2',
-        type: RecordType.vaccine,
+        type: 'vaccine',
         label: '狂犬病予防接種',
         date: DateTime(2026, 6, 20),
         cost: 3500,

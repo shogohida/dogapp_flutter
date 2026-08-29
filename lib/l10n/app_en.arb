@@ -16,6 +16,9 @@
   "welcomeBack": "Welcome back",
   "healthRecordsSummary": "Keeping track of {count} dogs' health, every day.",
   "upcoming": "Upcoming",
+  "addUpcoming": "Add plan",
+  "noUpcomingItems": "No upcoming plans",
+  "date": "Date",
   "dogInfoLine": "{color} · {age}y",
 
   "dogsTitle": "Dogs",
@@ -23,6 +26,14 @@
   "currentWeight": "Weight",
   "recordsTitle": "Records",
   "shareProfile": "Share profile",
+  "editProfile": "Edit profile",
+  "dogNameLabel": "Name",
+  "dogBreedLabel": "Breed",
+  "dogColorLabel": "Color",
+  "dogBirthYearLabel": "Birth year",
+  "invalidBirthYear": "Please enter a valid birth year",
+  "profileFieldsRequired": "Please fill in name, breed, and color",
+  "updateDogFailed": "Couldn't update profile: {error}",
   "shareFailed": "Failed to share: {error}",
   "breedColorLine": "{breed} · {color}",
 
@@ -49,6 +60,8 @@
   "chooseVideoFromGallery": "Choose video from gallery",
 
   "addRecord": "Add Record",
+  "recordTypeHint": "Category (e.g. Vaccine)",
+  "recordTypeRequired": "Please enter a category",
   "noteOptional": "Note (optional)",
   "costOptional": "Cost (optional)",
   "invalidCost": "Enter a cost of 0 or more",

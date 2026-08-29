@@ -82,7 +82,7 @@ class RecordsScreen extends StatelessWidget {
                         color: item.dog.accent.withValues(alpha: 0.13),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(item.record.type.icon,
+                      child: Icon(iconForRecordType(item.record.type),
                           size: 16, color: item.dog.accent),
                     ),
                     const SizedBox(width: 10),
@@ -144,21 +144,15 @@ class _AddRecordSheet extends StatefulWidget {
 
 class _AddRecordSheetState extends State<_AddRecordSheet> {
   late String _dogId = widget.dogs.first.id;
-  RecordType _type = RecordType.vaccine;
+  final _typeController = TextEditingController();
   final _noteController = TextEditingController();
   final _costController = TextEditingController();
   bool _saving = false;
   String? _error;
 
-  Map<RecordType, String> _typeLabels(AppLocalizations l10n) => {
-        RecordType.vaccine: l10n.recordTypeVaccine,
-        RecordType.grooming: l10n.recordTypeGrooming,
-        RecordType.vet: l10n.recordTypeVet,
-        RecordType.medication: l10n.recordTypeMedication,
-      };
-
   @override
   void dispose() {
+    _typeController.dispose();
     _noteController.dispose();
     _costController.dispose();
     super.dispose();
@@ -167,7 +161,6 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final typeLabels = _typeLabels(l10n);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -199,14 +192,10 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
             onChanged: (v) => setState(() => _dogId = v!),
           ),
           const SizedBox(height: 10),
-          DropdownButtonFormField<RecordType>(
-            initialValue: _type,
-            decoration: _fieldDecoration(),
-            items: typeLabels.entries
-                .map(
-                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
-                .toList(),
-            onChanged: (v) => setState(() => _type = v!),
+          TextField(
+            key: const Key('recordTypeField'),
+            controller: _typeController,
+            decoration: _fieldDecoration(hint: l10n.recordTypeHint),
           ),
           const SizedBox(height: 10),
           TextField(
@@ -231,7 +220,7 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _saving ? null : () => _save(l10n, typeLabels),
+              onPressed: _saving ? null : () => _save(l10n),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.ink,
                 foregroundColor: Colors.white,
@@ -253,8 +242,13 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
     );
   }
 
-  Future<void> _save(
-      AppLocalizations l10n, Map<RecordType, String> typeLabels) async {
+  Future<void> _save(AppLocalizations l10n) async {
+    final type = _typeController.text.trim();
+    if (type.isEmpty) {
+      setState(() => _error = l10n.recordTypeRequired);
+      return;
+    }
+
     final costText = _costController.text.trim();
     double? cost;
     if (costText.isNotEmpty) {
@@ -270,10 +264,10 @@ class _AddRecordSheetState extends State<_AddRecordSheet> {
       _error = null;
     });
     final note = _noteController.text.trim();
-    final label = note.isEmpty ? typeLabels[_type]! : note;
+    final label = note.isEmpty ? type : note;
     try {
       await widget.repository
-          .addRecord(dogId: _dogId, type: _type, label: label, cost: cost);
+          .addRecord(dogId: _dogId, type: type, label: label, cost: cost);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = l10n.saveFailed('$e'));

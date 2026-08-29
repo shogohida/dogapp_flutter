@@ -22,6 +22,14 @@ class ApiException implements Exception {
 abstract class DogappApiClient {
   Future<List<Dog>> fetchDogs(String ownerId);
 
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  });
+
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
@@ -36,7 +44,7 @@ abstract class DogappApiClient {
 
   Future<HealthRecord> createRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   });
@@ -49,6 +57,15 @@ abstract class DogappApiClient {
     required Duration duration,
     required double distanceMeters,
     required List<GeoPoint> points,
+  });
+
+  Future<List<UpcomingItem>> fetchUpcoming(String ownerId);
+
+  Future<UpcomingItem> createUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
   });
 }
 
@@ -83,6 +100,30 @@ class HttpDogappApiClient implements DogappApiClient {
           accent: AppColors.accentPalette[i % AppColors.accentPalette.length],
         ),
     ];
+  }
+
+  @override
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId');
+    final res = await _client
+        .patch(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'name': name,
+            'breed': breed,
+            'color': color,
+            'birthYear': birthYear,
+          }),
+        )
+        .timeout(_timeout);
+    _checkStatus(res);
   }
 
   @override
@@ -129,7 +170,7 @@ class HttpDogappApiClient implements DogappApiClient {
   @override
   Future<HealthRecord> createRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   }) async {
@@ -139,7 +180,7 @@ class HttpDogappApiClient implements DogappApiClient {
           uri,
           headers: const {'Content-Type': 'application/json'},
           body: jsonEncode({
-            'type': type.name,
+            'type': type,
             'label': label,
             if (cost != null) 'cost': cost,
           }),
@@ -185,6 +226,41 @@ class HttpDogappApiClient implements DogappApiClient {
         .timeout(_timeout);
     _checkStatus(res);
     return WalkRoute.fromJson(
+        jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async {
+    final uri = Uri.parse('$_baseUrl/owners/$ownerId/upcoming');
+    final res = await _client.get(uri).timeout(_timeout);
+    _checkStatus(res);
+    final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+    return list
+        .map((e) => UpcomingItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  @override
+  Future<UpcomingItem> createUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs/$dogId/upcoming');
+    final res = await _client
+        .post(
+          uri,
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'type': type.name,
+            'label': label,
+            'date': date.toIso8601String(),
+          }),
+        )
+        .timeout(_timeout);
+    _checkStatus(res);
+    return UpcomingItem.fromJson(
         jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
   }
 

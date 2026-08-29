@@ -14,6 +14,7 @@ class DogsRepository extends ChangeNotifier {
   final DogappApiClient _client;
 
   List<Dog> dogs = [];
+  List<UpcomingItem> upcoming = [];
   bool isLoading = false;
   Object? error;
 
@@ -22,13 +23,43 @@ class DogsRepository extends ChangeNotifier {
     error = null;
     notifyListeners();
     try {
-      dogs = await _client.fetchDogs(ownerId);
+      final results = await Future.wait([
+        _client.fetchDogs(ownerId),
+        _client.fetchUpcoming(ownerId),
+      ]);
+      dogs = results[0] as List<Dog>;
+      upcoming = results[1] as List<UpcomingItem>;
     } catch (e) {
       error = e;
     } finally {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    await _client.updateDog(
+      dogId: dogId,
+      name: name,
+      breed: breed,
+      color: color,
+      birthYear: birthYear,
+    );
+    final index = dogs.indexWhere((d) => d.id == dogId);
+    if (index == -1) return;
+    dogs[index] = dogs[index].copyWithProfile(
+      name: name,
+      breed: breed,
+      color: color,
+      birthYear: birthYear,
+    );
+    notifyListeners();
   }
 
   Future<AICheckResult> runAiCheck({
@@ -49,7 +80,7 @@ class DogsRepository extends ChangeNotifier {
 
   Future<void> addRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   }) async {
@@ -62,6 +93,22 @@ class DogsRepository extends ChangeNotifier {
     final index = dogs.indexWhere((d) => d.id == dogId);
     if (index == -1) return;
     dogs[index] = dogs[index].copyWithRecords([record, ...dogs[index].records]);
+    notifyListeners();
+  }
+
+  Future<void> addUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
+  }) async {
+    final item = await _client.createUpcoming(
+      dogId: dogId,
+      type: type,
+      label: label,
+      date: date,
+    );
+    upcoming = [...upcoming, item]..sort((a, b) => a.date.compareTo(b.date));
     notifyListeners();
   }
 }

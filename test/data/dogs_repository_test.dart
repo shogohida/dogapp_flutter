@@ -19,17 +19,48 @@ const _leo = Dog(
 );
 
 class _StubApiClient implements DogappApiClient {
-  _StubApiClient({this.dogsResult, this.dogsError, this.createRecordResult});
+  _StubApiClient({
+    this.dogsResult,
+    this.dogsError,
+    this.createRecordResult,
+    this.upcomingResult,
+    this.createUpcomingResult,
+  });
 
   final List<Dog>? dogsResult;
   final Object? dogsError;
   final HealthRecord? createRecordResult;
+  final List<UpcomingItem>? upcomingResult;
+  final UpcomingItem? createUpcomingResult;
 
   @override
   Future<List<Dog>> fetchDogs(String ownerId) async {
     if (dogsError != null) throw dogsError!;
     return dogsResult!;
   }
+
+  @override
+  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async =>
+      upcomingResult ?? [];
+
+  @override
+  Future<UpcomingItem> createUpcoming({
+    required String dogId,
+    required RecordType type,
+    required String label,
+    required DateTime date,
+  }) async {
+    return createUpcomingResult!;
+  }
+
+  @override
+  Future<void> updateDog({
+    required String dogId,
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {}
 
   @override
   Future<AICheckResult> runAiCheck(
@@ -51,7 +82,7 @@ class _StubApiClient implements DogappApiClient {
   @override
   Future<HealthRecord> createRecord({
     required String dogId,
-    required RecordType type,
+    required String type,
     required String label,
     double? cost,
   }) async {
@@ -106,18 +137,84 @@ void main() {
 
   test('addRecordは該当する犬のrecordsだけを更新する', () async {
     final newRecord = HealthRecord(
-        id: '1',
-        type: RecordType.vet,
-        label: '定期健診',
-        date: DateTime(2026, 8, 27));
+        id: '1', type: 'vet', label: '定期健診', date: DateTime(2026, 8, 27));
     final repo = DogsRepository(
       client: _StubApiClient(dogsResult: [_leo], createRecordResult: newRecord),
     );
     await repo.loadDogs();
 
-    await repo.addRecord(dogId: 'leo', type: RecordType.vet, label: '定期健診');
+    await repo.addRecord(dogId: 'leo', type: 'vet', label: '定期健診');
 
     expect(repo.dogs.single.records, [newRecord]);
+  });
+
+  test('loadDogsは今後の予定も読み込む', () async {
+    final item = UpcomingItem(
+        id: '1',
+        dogId: 'leo',
+        label: '定期健診',
+        date: DateTime(2026, 9, 1),
+        type: RecordType.vet);
+    final repo = DogsRepository(
+      client: _StubApiClient(dogsResult: [_leo], upcomingResult: [item]),
+    );
+
+    await repo.loadDogs();
+
+    expect(repo.upcoming, [item]);
+  });
+
+  test('addUpcomingは日付順を保って追加する', () async {
+    final earlier = UpcomingItem(
+        id: '1',
+        dogId: 'leo',
+        label: '早い予定',
+        date: DateTime(2026, 9, 1),
+        type: RecordType.vet);
+    final later = UpcomingItem(
+        id: '2',
+        dogId: 'leo',
+        label: '遅い予定',
+        date: DateTime(2026, 9, 10),
+        type: RecordType.grooming);
+    final repo = DogsRepository(
+      client: _StubApiClient(
+        dogsResult: [_leo],
+        upcomingResult: [later],
+        createUpcomingResult: earlier,
+      ),
+    );
+    await repo.loadDogs();
+
+    await repo.addUpcoming(
+      dogId: 'leo',
+      type: RecordType.vet,
+      label: '早い予定',
+      date: DateTime(2026, 9, 1),
+    );
+
+    expect(repo.upcoming, [earlier, later]);
+  });
+
+  test('updateDogは該当する犬のプロフィールだけを更新する', () async {
+    final repo = DogsRepository(client: _StubApiClient(dogsResult: [_leo]));
+    await repo.loadDogs();
+
+    await repo.updateDog(
+      dogId: 'leo',
+      name: 'レオ2',
+      breed: 'トイプードル',
+      color: 'ホワイト',
+      birthYear: 2020,
+    );
+
+    final updated = repo.dogs.single;
+    expect(updated.id, 'leo');
+    expect(updated.name, 'レオ2');
+    expect(updated.breed, 'トイプードル');
+    expect(updated.color, 'ホワイト');
+    expect(updated.birthYear, 2020);
+    expect(updated.accent, _leo.accent); // accentはローカルの値を保持する
   });
 
   test('notifyListenersがloadDogsの開始と終了で呼ばれる', () async {

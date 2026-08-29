@@ -8,23 +8,28 @@
 
 ```
 lib/
-  main.dart                  アプリのエントリーポイント(l10n/API/位置情報の依存性注入)
-  config/api_config.dart     dogapp-apiのbaseUrl/ownerId(--dart-defineで上書き可)
+  main.dart                  アプリのエントリーポイント。ログイン状態(_AppRoot)に応じて
+                              LoginScreen⇄MainShellを切り替え、APIクライアント等を組み立てる
+  config/api_config.dart     dogapp-apiのbaseUrl(--dart-defineで上書き可)
   theme/app_theme.dart       デザイントークン(色・タイポグラフィ)
   l10n/                      日本語(ja)・英語(en)のARBファイルと生成コード
   models/
     dog.dart                 Dog, HealthRecord, WeightEntry, AICheckResult, UpcomingItem
+    user.dart                AppUser, AuthResult(signup/loginのレスポンス)
     walk.dart                GeoPoint, WalkRoute, RecommendedCourse
   data/
     mock_data.dart           サンプルデータ(レオ・ノア) / フェイクテストの種データ
-    dogs_repository.dart     犬一覧の読み込み・記録追加を管理するChangeNotifier
+    auth_repository.dart     signup/login/ログアウトとセッション復元(SharedPreferences)
+    dogs_repository.dart     犬一覧の読み込み・追加・記録追加を管理するChangeNotifier
     walks_repository.dart    散歩記録のGPS計測・保存・おすすめコース集計
   services/
     dogapp_api_client.dart   dogapp-apiへのHTTPクライアント(タイムアウト付き)
+    auth_token_store.dart    ログイン中のJWTを保持する薄い箱(APIクライアントが購読)
     location_service.dart    geolocatorへの薄いラッパー
   utils/geo.dart             2点間距離(Haversine公式)
   widgets/dog_avatar.dart, weight_chart.dart
   screens/
+    login_screen.dart        ログイン/アカウント作成画面
     main_shell.dart          ボトムタブナビゲーション(ホーム/犬たち/健康チェック/記録/散歩)
     home_screen.dart, dogs_screen.dart, ai_check_screen.dart,
     records_screen.dart, walk_screen.dart
@@ -69,22 +74,41 @@ flutter run -d chrome            # デフォルトでlocalhost:8080に接続す�
 flutter run --dart-define=API_BASE_URL=https://api.example.com
 ```
 
+## ログイン
+
+自前実装(外部の認証サービスは使わない)。起動時、`AuthRepository`が
+`SharedPreferences`に保存済みのトークンを復元し、あればそのままホーム画面へ、
+無ければ`LoginScreen`(ログイン⇄アカウント作成を切り替え可能)を表示する。
+ログイン後はトークンを`AuthTokenStore`(`ChangeNotifier`)に保持し、
+`HttpDogappApiClient`がリクエストの度にそこから読んで`Authorization: Bearer`
+ヘッダーを付与する(コンストラクタに渡す`getToken`コールバック経由なので、
+ログイン/ログアウトのたびにAPIクライアントを作り直す必要はない)。
+ホーム画面右上のアイコンからログアウトできる。
+
+サインアップ直後は犬が1匹も登録されていないため、「犬たち」タブの
+「+」ボタン(または犬0匹時の案内)から`POST /dogs`で自分の犬を追加する。
+
 ## dogapp-apiとの連携
 
 `lib/services/dogapp_api_client.dart`が以下のエンドポイントを呼び出す。
 フィールド名・enumの文字列表現は実際の`dogapp-api`(`../dogapp-api`)の
-JSONスキーマと完全に一致させてある。
+JSONスキーマと完全に一致させてある。`/auth/*`以外は`Authorization: Bearer`
+ヘッダーが必須で、`/dogs/{dogId}/...`系はトークンの持ち主が所有する犬しか
+操作できない。
 
 | メソッド | パス | 用途 |
 |---|---|---|
-| GET | `/owners/{ownerId}/dogs` | 犬一覧の取得 |
+| POST | `/auth/signup` | アカウント作成、トークンを取得 |
+| POST | `/auth/login` | ログイン、トークンを取得 |
+| GET | `/dogs` | 自分の犬一覧の取得 |
+| POST | `/dogs` | 犬を追加(呼び出し元が所有者になる) |
 | PATCH | `/dogs/{dogId}` | 犬のプロフィール(名前・犬種・毛色・生まれた年)を更新 |
 | POST | `/dogs/{dogId}/ai-check` | 写真(Base64)を送りAI健康チェック結果を取得 |
 | POST | `/dogs/{dogId}/gait-check` | 短い動画(multipart/form-data)を送り歩行の異常を判定 |
-| POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加 |
+| POST | `/dogs/{dogId}/records` | 通院・ワクチン等の記録を追加(種別は自由入力) |
 | GET | `/dogs/{dogId}/walks` | 散歩記録の一覧取得 |
 | POST | `/dogs/{dogId}/walks` | GPSで記録した散歩ルートの保存 |
-| GET | `/owners/{ownerId}/upcoming` | 今後の予定一覧の取得 |
+| GET | `/upcoming` | 今後の予定一覧の取得 |
 | POST | `/dogs/{dogId}/upcoming` | 今後の予定の追加 |
 
 ## 散歩GPS記録・おすすめコース
@@ -131,7 +155,9 @@ geolocator)に依存せず、すべて`test/fakes/`のフェイク実装や
 `http/testing.dart`の`MockClient`で完結する。ウィジェットテストは
 既定のテスト画面サイズ(800x600、電話向けUIには小さすぎる)と英語ロケールの
 まま失敗しがちなため、`test/widget_test.dart`のヘルパーでiPhoneサイズ・
-日本語ロケールに固定している。
+日本語ロケールに固定している。ログイン画面をスキップしたいテストは
+`DogHealthApp(initialToken: "...")`でログイン済み状態を再現できる
+(ログイン/ログアウト自体を検証するテストだけ`initialToken: null`を渡す)。
 
 ## Web版との対応関係
 

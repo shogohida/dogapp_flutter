@@ -36,6 +36,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noDogsRegistered => '登録されている犬がいません';
 
   @override
+  String get loginTitle => 'ログイン';
+
+  @override
+  String get signupTitle => 'アカウント作成';
+
+  @override
+  String get emailLabel => 'メールアドレス';
+
+  @override
+  String get passwordLabel => 'パスワード';
+
+  @override
+  String get loginButton => 'ログイン';
+
+  @override
+  String get signupButton => 'アカウントを作成';
+
+  @override
+  String get switchToSignup => 'アカウントをお持ちでない方はこちら';
+
+  @override
+  String get switchToLogin => 'すでにアカウントをお持ちの方はこちら';
+
+  @override
+  String authFailed(String error) {
+    return '認証に失敗しました: $error';
+  }
+
+  @override
+  String get passwordTooShort => 'パスワードは8文字以上で入力してください';
+
+  @override
+  String get logout => 'ログアウト';
+
+  @override
+  String get addDog => '犬を追加';
+
+  @override
   String get welcomeBack => 'おかえりなさい';
 
   @override

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dogapp/main.dart';
 import 'package:dogapp/screens/home_screen.dart';
@@ -17,7 +18,12 @@ Future<void> _pumpApp(
   Future<Uint8List?> Function(BuildContext context)? pickImage,
   Future<XFile?> Function(BuildContext context)? pickVideo,
   Future<void> Function(Uint8List pngBytes, String dogName)? shareImage,
+  // ログイン画面をスキップしてMainShellへ直接入るためのテスト専用オーバーライド。
+  // ログイン/ログアウト自体を検証するテストではnullを渡す。
+  String? initialToken = 'test-token',
 }) async {
+  SharedPreferences.setMockInitialValues({});
+
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -38,8 +44,9 @@ Future<void> _pumpApp(
     pickImage: pickImage,
     pickVideo: pickVideo,
     shareImage: shareImage,
+    initialToken: initialToken,
   ));
-  await tester.pump(); // loadDogs()の完了を待つ
+  await tester.pump(); // loadDogs()/restoreSession()の完了を待つ
 }
 
 void main() {
@@ -275,5 +282,76 @@ void main() {
     final vetPos = tester.getTopLeft(vetFinder).dy;
     final vaccinePos = tester.getTopLeft(vaccineFinder).dy;
     expect(vetPos, lessThan(vaccinePos));
+  });
+
+  testWidgets('未ログイン時はログイン画面が表示される', (tester) async {
+    await _pumpApp(tester, initialToken: null);
+    await tester.pumpAndSettle();
+
+    expect(find.text('ログイン'), findsWidgets);
+    expect(find.text('おかえりなさい'), findsNothing);
+  });
+
+  testWidgets('ログインに成功するとホーム画面が表示される', (tester) async {
+    await _pumpApp(tester, initialToken: null);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(const Key('emailField')), 'user@example.com');
+    await tester.enterText(
+        find.byKey(const Key('passwordField')), 'correct-password');
+    await tester.tap(find.text('ログイン').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('おかえりなさい'), findsOneWidget);
+  });
+
+  testWidgets('アカウント作成に切り替えて成功するとホーム画面が表示される', (tester) async {
+    await _pumpApp(tester, initialToken: null);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('アカウントをお持ちでない方はこちら'));
+    await tester.pumpAndSettle();
+    expect(find.text('アカウント作成'), findsWidgets);
+
+    await tester.enterText(
+        find.byKey(const Key('emailField')), 'new@example.com');
+    await tester.enterText(
+        find.byKey(const Key('passwordField')), 'correct-password');
+    await tester.tap(find.text('アカウントを作成'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('おかえりなさい'), findsOneWidget);
+  });
+
+  testWidgets('ログアウトするとログイン画面に戻る', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.byKey(const Key('logoutButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('ログイン'), findsWidgets);
+    expect(find.text('おかえりなさい'), findsNothing);
+  });
+
+  testWidgets('犬たちタブで犬を追加すると一覧に反映される', (tester) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('犬たち').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('addDogButton')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('newDogNameField')), 'ココ');
+    await tester.enterText(
+        find.byKey(const Key('newDogBreedField')), 'トイプードル');
+    await tester.enterText(find.byKey(const Key('newDogColorField')), 'ホワイト');
+    await tester.enterText(
+        find.byKey(const Key('newDogBirthYearField')), '2023');
+    await tester.tap(find.text('保存する'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('ココ'), findsWidgets);
   });
 }

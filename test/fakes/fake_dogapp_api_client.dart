@@ -2,17 +2,49 @@ import 'dart:typed_data';
 
 import 'package:dogapp/data/mock_data.dart';
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/user.dart';
 import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 
 /// 実ネットワークに依存せずウィジェットテストを走らせるためのフェイク実装。
 /// 既存のモックデータ(mock_data.dart)をそのまま「サーバーからの応答」として返す。
 class FakeDogappApiClient implements DogappApiClient {
+  @override
+  Future<AuthResult> signup(
+          {required String email, required String password}) async =>
+      AuthResult(
+          token: 'fake-token', user: AppUser(id: 'fake-user', email: email));
+
+  @override
+  Future<AuthResult> login(
+          {required String email, required String password}) async =>
+      AuthResult(
+          token: 'fake-token', user: AppUser(id: 'fake-user', email: email));
+
   // 呼び出し側がリストの要素を入れ替える(DogsRepository.addRecord/updateDogなど)
   // ことがあるため、共有のmockDogsそのものではなくコピーを返す。これを怠ると
   // あるテストでの更新が同じプロセス内の後続テストに漏れてしまう。
   @override
-  Future<List<Dog>> fetchDogs(String ownerId) async => List.of(mockDogs);
+  Future<List<Dog>> fetchDogs() async => List.of(mockDogs);
+
+  @override
+  Future<Dog> createDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    return Dog(
+      id: 'fake-dog-id',
+      name: name,
+      breed: breed,
+      color: color,
+      birthYear: birthYear,
+      accent: mockDogs.first.accent,
+      weightHistory: const [],
+      records: const [],
+    );
+  }
 
   @override
   Future<void> updateDog({
@@ -82,8 +114,7 @@ class FakeDogappApiClient implements DogappApiClient {
   }
 
   @override
-  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async =>
-      mockUpcoming;
+  Future<List<UpcomingItem>> fetchUpcoming() async => List.of(mockUpcoming);
 
   @override
   Future<UpcomingItem> createUpcoming({

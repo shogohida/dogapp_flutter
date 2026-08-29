@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/dog.dart';
+import '../models/user.dart';
 import '../models/walk.dart';
 import '../theme/app_theme.dart';
 
@@ -20,7 +21,19 @@ class ApiException implements Exception {
 /// 画面側はこのインターフェースだけを見るので、テストではフェイク実装に
 /// 差し替えられる(test/fakes/fake_dogapp_api_client.dart参照)。
 abstract class DogappApiClient {
-  Future<List<Dog>> fetchDogs(String ownerId);
+  Future<AuthResult> signup({required String email, required String password});
+
+  Future<AuthResult> login({required String email, required String password});
+
+  /// ログイン中のユーザーが所有する犬の一覧を取得する。
+  Future<List<Dog>> fetchDogs();
+
+  Future<Dog> createDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  });
 
   Future<void> updateDog({
     required String dogId,
@@ -59,7 +72,7 @@ abstract class DogappApiClient {
     required List<GeoPoint> points,
   });
 
-  Future<List<UpcomingItem>> fetchUpcoming(String ownerId);
+  Future<List<UpcomingItem>> fetchUpcoming();
 
   Future<UpcomingItem> createUpcoming({
     required String dogId,
@@ -77,20 +90,64 @@ abstract class DogappApiClient {
 /// 変更が必要な場合はこのファイルと lib/models/dog.dart の
 /// fromJson/toJson だけを直せばよいよう分離している。
 class HttpDogappApiClient implements DogappApiClient {
-  HttpDogappApiClient(
-      {http.Client? httpClient, String? baseUrl, Duration? timeout})
-      : _client = httpClient ?? http.Client(),
+  HttpDogappApiClient({
+    http.Client? httpClient,
+    String? baseUrl,
+    Duration? timeout,
+    String? Function()? getToken,
+  })  : _client = httpClient ?? http.Client(),
         _baseUrl = baseUrl ?? ApiConfig.baseUrl,
-        _timeout = timeout ?? const Duration(seconds: 10);
+        _timeout = timeout ?? const Duration(seconds: 10),
+        _getToken = getToken;
 
   final http.Client _client;
   final String _baseUrl;
   final Duration _timeout;
 
+  /// ログイン/ログアウトの度にAPIクライアントを作り直さずに済むよう、
+  /// トークンは固定値ではなく都度読み直すコールバックとして受け取る。
+  final String? Function()? _getToken;
+
+  Map<String, String> _headers() {
+    final token = _getToken?.call();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
   @override
-  Future<List<Dog>> fetchDogs(String ownerId) async {
-    final uri = Uri.parse('$_baseUrl/owners/$ownerId/dogs');
-    final res = await _client.get(uri).timeout(_timeout);
+  Future<AuthResult> signup(
+      {required String email, required String password}) async {
+    final uri = Uri.parse('$_baseUrl/auth/signup');
+    final res = await _client
+        .post(uri,
+            headers: _headers(),
+            body: jsonEncode({'email': email, 'password': password}))
+        .timeout(_timeout);
+    _checkStatus(res);
+    return AuthResult.fromJson(
+        jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<AuthResult> login(
+      {required String email, required String password}) async {
+    final uri = Uri.parse('$_baseUrl/auth/login');
+    final res = await _client
+        .post(uri,
+            headers: _headers(),
+            body: jsonEncode({'email': email, 'password': password}))
+        .timeout(_timeout);
+    _checkStatus(res);
+    return AuthResult.fromJson(
+        jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<List<Dog>> fetchDogs() async {
+    final uri = Uri.parse('$_baseUrl/dogs');
+    final res = await _client.get(uri, headers: _headers()).timeout(_timeout);
     _checkStatus(res);
     final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
     return [
@@ -100,6 +157,35 @@ class HttpDogappApiClient implements DogappApiClient {
           accent: AppColors.accentPalette[i % AppColors.accentPalette.length],
         ),
     ];
+  }
+
+  @override
+  Future<Dog> createDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/dogs');
+    final res = await _client
+        .post(
+          uri,
+          headers: _headers(),
+          body: jsonEncode({
+            'name': name,
+            'breed': breed,
+            'color': color,
+            'birthYear': birthYear,
+          }),
+        )
+        .timeout(_timeout);
+    _checkStatus(res);
+    // accentは表示専用でJSONには含まれないため、呼び出し側(リポジトリ)が
+    // 一覧内の位置から決める。ここでは仮の色を入れておく。
+    return Dog.fromJson(
+      jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>,
+      accent: AppColors.accentPalette.first,
+    );
   }
 
   @override
@@ -114,7 +200,7 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client
         .patch(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: _headers(),
           body: jsonEncode({
             'name': name,
             'breed': breed,
@@ -135,7 +221,7 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client
         .post(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: _headers(),
           body: jsonEncode({'imageBase64': base64Encode(imageBytes)}),
         )
         // 画像解析はClaude API呼び出しを挟むぶん時間がかかりうるため、
@@ -159,6 +245,10 @@ class HttpDogappApiClient implements DogappApiClient {
     final request = http.MultipartRequest('POST', uri)
       ..files.add(http.MultipartFile.fromBytes('video', videoBytes,
           filename: filename));
+    final token = _getToken?.call();
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
     final streamedResponse = await _client.send(request).timeout(_timeout * 3);
     final res = await http.Response.fromStream(streamedResponse);
     _checkStatus(res);
@@ -178,7 +268,7 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client
         .post(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: _headers(),
           body: jsonEncode({
             'type': type,
             'label': label,
@@ -195,7 +285,7 @@ class HttpDogappApiClient implements DogappApiClient {
   @override
   Future<List<WalkRoute>> fetchWalks(String dogId) async {
     final uri = Uri.parse('$_baseUrl/dogs/$dogId/walks');
-    final res = await _client.get(uri).timeout(_timeout);
+    final res = await _client.get(uri, headers: _headers()).timeout(_timeout);
     _checkStatus(res);
     final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
     return list
@@ -215,7 +305,7 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client
         .post(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: _headers(),
           body: jsonEncode({
             'startedAt': startedAt.toIso8601String(),
             'durationSeconds': duration.inSeconds,
@@ -230,9 +320,9 @@ class HttpDogappApiClient implements DogappApiClient {
   }
 
   @override
-  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async {
-    final uri = Uri.parse('$_baseUrl/owners/$ownerId/upcoming');
-    final res = await _client.get(uri).timeout(_timeout);
+  Future<List<UpcomingItem>> fetchUpcoming() async {
+    final uri = Uri.parse('$_baseUrl/upcoming');
+    final res = await _client.get(uri, headers: _headers()).timeout(_timeout);
     _checkStatus(res);
     final list = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
     return list
@@ -251,7 +341,7 @@ class HttpDogappApiClient implements DogappApiClient {
     final res = await _client
         .post(
           uri,
-          headers: const {'Content-Type': 'application/json'},
+          headers: _headers(),
           body: jsonEncode({
             'type': type.name,
             'label': label,

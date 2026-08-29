@@ -36,6 +36,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noDogsRegistered => 'No dogs registered';
 
   @override
+  String get loginTitle => 'Log in';
+
+  @override
+  String get signupTitle => 'Create account';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get loginButton => 'Log in';
+
+  @override
+  String get signupButton => 'Create account';
+
+  @override
+  String get switchToSignup => 'Don\'t have an account? Sign up';
+
+  @override
+  String get switchToLogin => 'Already have an account? Log in';
+
+  @override
+  String authFailed(String error) {
+    return 'Authentication failed: $error';
+  }
+
+  @override
+  String get passwordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String get logout => 'Log out';
+
+  @override
+  String get addDog => 'Add dog';
+
+  @override
   String get welcomeBack => 'Welcome back';
 
   @override

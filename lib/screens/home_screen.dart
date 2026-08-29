@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/auth_repository.dart';
 import '../data/dogs_repository.dart';
 import '../l10n/app_localizations.dart';
 import '../models/dog.dart';
@@ -8,12 +9,14 @@ import '../widgets/dog_avatar.dart';
 class HomeScreen extends StatelessWidget {
   final List<Dog> dogs;
   final DogsRepository repository;
+  final AuthRepository authRepository;
   final void Function(String dogId) onSelectDog;
 
   const HomeScreen({
     super.key,
     required this.dogs,
     required this.repository,
+    required this.authRepository,
     required this.onSelectDog,
   });
 
@@ -25,7 +28,19 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.welcomeBack, style: AppText.display),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(l10n.welcomeBack, style: AppText.display),
+              IconButton(
+                key: const Key('logoutButton'),
+                onPressed: authRepository.logout,
+                icon: const Icon(Icons.logout, size: 20),
+                color: AppColors.inkSoft,
+                tooltip: l10n.logout,
+              ),
+            ],
+          ),
           const SizedBox(height: 2),
           Text(l10n.healthRecordsSummary(dogs.length), style: AppText.bodySoft),
           const SizedBox(height: 20),

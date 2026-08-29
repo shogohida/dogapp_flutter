@@ -14,6 +14,22 @@
   "retry": "再試行",
   "noDogsRegistered": "登録されている犬がいません",
 
+  "loginTitle": "ログイン",
+  "signupTitle": "アカウント作成",
+  "emailLabel": "メールアドレス",
+  "passwordLabel": "パスワード",
+  "loginButton": "ログイン",
+  "signupButton": "アカウントを作成",
+  "switchToSignup": "アカウントをお持ちでない方はこちら",
+  "switchToLogin": "すでにアカウントをお持ちの方はこちら",
+  "authFailed": "認証に失敗しました: {error}",
+  "@authFailed": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "passwordTooShort": "パスワードは8文字以上で入力してください",
+  "logout": "ログアウト",
+  "addDog": "犬を追加",
+
   "welcomeBack": "おかえりなさい",
   "healthRecordsSummary": "{count}匹の健康記録、今日も欠かさず。",
   "@healthRecordsSummary": {

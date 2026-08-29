@@ -152,6 +152,78 @@ abstract class AppLocalizations {
   /// **'登録されている犬がいません'**
   String get noDogsRegistered;
 
+  /// No description provided for @loginTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン'**
+  String get loginTitle;
+
+  /// No description provided for @signupTitle.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウント作成'**
+  String get signupTitle;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'メールアドレス'**
+  String get emailLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In ja, this message translates to:
+  /// **'パスワード'**
+  String get passwordLabel;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログイン'**
+  String get loginButton;
+
+  /// No description provided for @signupButton.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントを作成'**
+  String get signupButton;
+
+  /// No description provided for @switchToSignup.
+  ///
+  /// In ja, this message translates to:
+  /// **'アカウントをお持ちでない方はこちら'**
+  String get switchToSignup;
+
+  /// No description provided for @switchToLogin.
+  ///
+  /// In ja, this message translates to:
+  /// **'すでにアカウントをお持ちの方はこちら'**
+  String get switchToLogin;
+
+  /// No description provided for @authFailed.
+  ///
+  /// In ja, this message translates to:
+  /// **'認証に失敗しました: {error}'**
+  String authFailed(String error);
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In ja, this message translates to:
+  /// **'パスワードは8文字以上で入力してください'**
+  String get passwordTooShort;
+
+  /// No description provided for @logout.
+  ///
+  /// In ja, this message translates to:
+  /// **'ログアウト'**
+  String get logout;
+
+  /// No description provided for @addDog.
+  ///
+  /// In ja, this message translates to:
+  /// **'犬を追加'**
+  String get addDog;
+
   /// No description provided for @welcomeBack.
   ///
   /// In ja, this message translates to:

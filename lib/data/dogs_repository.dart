@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../config/api_config.dart';
 import '../models/dog.dart';
 import '../services/dogapp_api_client.dart';
+import '../theme/app_theme.dart';
 
 /// 画面側が参照する唯一のデータソース。
 /// dogapp-apiへの実際のHTTP呼び出しは[DogappApiClient]に委譲し、
@@ -18,23 +18,53 @@ class DogsRepository extends ChangeNotifier {
   bool isLoading = false;
   Object? error;
 
-  Future<void> loadDogs({String ownerId = ApiConfig.ownerId}) async {
+  Future<void> loadDogs() async {
     isLoading = true;
     error = null;
     notifyListeners();
     try {
-      final results = await Future.wait([
-        _client.fetchDogs(ownerId),
-        _client.fetchUpcoming(ownerId),
-      ]);
-      dogs = results[0] as List<Dog>;
-      upcoming = results[1] as List<UpcomingItem>;
+      dogs = await _client.fetchDogs();
     } catch (e) {
       error = e;
-    } finally {
       isLoading = false;
       notifyListeners();
+      return;
     }
+    try {
+      upcoming = await _client.fetchUpcoming();
+    } catch (_) {
+      // dogapp-apiがまだ今後の予定エンドポイントを持たない環境でも、
+      // 犬一覧の表示自体は妨げない(ベストエフォート扱い)。
+      upcoming = [];
+    }
+    isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> addDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    final created = await _client.createDog(
+      name: name,
+      breed: breed,
+      color: color,
+      birthYear: birthYear,
+    );
+    final dog = Dog(
+      id: created.id,
+      name: created.name,
+      breed: created.breed,
+      color: created.color,
+      birthYear: created.birthYear,
+      accent: AppColors.accentPalette[dogs.length % AppColors.accentPalette.length],
+      weightHistory: created.weightHistory,
+      records: created.records,
+    );
+    dogs = [...dogs, dog];
+    notifyListeners();
   }
 
   Future<void> updateDog({

@@ -57,6 +57,7 @@ class DogsTabScreenState extends State<DogsTabScreen> {
     }
     return DogsListScreen(
       dogs: widget.dogs,
+      repository: widget.repository,
       onSelectDog: (id) => setState(() => _selectedDogId = id),
     );
   }
@@ -64,10 +65,15 @@ class DogsTabScreenState extends State<DogsTabScreen> {
 
 class DogsListScreen extends StatelessWidget {
   final List<Dog> dogs;
+  final DogsRepository repository;
   final void Function(String dogId) onSelectDog;
 
-  const DogsListScreen(
-      {super.key, required this.dogs, required this.onSelectDog});
+  const DogsListScreen({
+    super.key,
+    required this.dogs,
+    required this.repository,
+    required this.onSelectDog,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +81,20 @@ class DogsListScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
       children: [
-        Text(l10n.dogsTitle, style: AppText.display),
-        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(l10n.dogsTitle, style: AppText.display),
+            IconButton(
+              key: const Key('addDogButton'),
+              onPressed: () => showAddDogSheet(context, repository),
+              icon: const Icon(Icons.add_circle_outline, size: 22),
+              color: AppColors.ink,
+              tooltip: l10n.addDog,
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
         ...dogs.map((dog) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: InkWell(
@@ -401,6 +419,175 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = l10n.updateDogFailed('$e'));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  InputDecoration _fieldDecoration({String? hint}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.ink.withValues(alpha: 0.12)),
+      ),
+    );
+  }
+}
+
+void showAddDogSheet(BuildContext context, DogsRepository repository) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.paper,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    isScrollControlled: true,
+    builder: (context) => _AddDogSheet(repository: repository),
+  );
+}
+
+class _AddDogSheet extends StatefulWidget {
+  final DogsRepository repository;
+
+  const _AddDogSheet({required this.repository});
+
+  @override
+  State<_AddDogSheet> createState() => _AddDogSheetState();
+}
+
+class _AddDogSheetState extends State<_AddDogSheet> {
+  final _nameController = TextEditingController();
+  final _breedController = TextEditingController();
+  final _colorController = TextEditingController();
+  final _birthYearController = TextEditingController();
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _breedController.dispose();
+    _colorController.dispose();
+    _birthYearController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(l10n.addDog, style: AppText.displaySmall)),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: AppColors.ink),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            key: const Key('newDogNameField'),
+            controller: _nameController,
+            decoration: _fieldDecoration(hint: l10n.dogNameLabel),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const Key('newDogBreedField'),
+            controller: _breedController,
+            decoration: _fieldDecoration(hint: l10n.dogBreedLabel),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const Key('newDogColorField'),
+            controller: _colorController,
+            decoration: _fieldDecoration(hint: l10n.dogColorLabel),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            key: const Key('newDogBirthYearField'),
+            controller: _birthYearController,
+            keyboardType: TextInputType.number,
+            decoration: _fieldDecoration(hint: l10n.dogBirthYearLabel),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(_error!,
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.concernBorder)),
+          ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : () => _save(l10n),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.ink,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: _saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Text(l10n.save, style: const TextStyle(fontSize: 13)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _save(AppLocalizations l10n) async {
+    final name = _nameController.text.trim();
+    final breed = _breedController.text.trim();
+    final color = _colorController.text.trim();
+    final birthYear = int.tryParse(_birthYearController.text.trim());
+    if (name.isEmpty || breed.isEmpty || color.isEmpty) {
+      setState(() => _error = l10n.profileFieldsRequired);
+      return;
+    }
+    if (birthYear == null || birthYear < 1900 || birthYear > 2100) {
+      setState(() => _error = l10n.invalidBirthYear);
+      return;
+    }
+
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.repository.addDog(
+        name: name,
+        breed: breed,
+        color: color,
+        birthYear: birthYear,
+      );
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) setState(() => _error = l10n.saveFailed('$e'));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

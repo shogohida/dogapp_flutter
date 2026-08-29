@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../data/auth_repository.dart';
 import '../data/dogs_repository.dart';
 import '../data/walks_repository.dart';
 import '../l10n/app_localizations.dart';
@@ -14,6 +15,7 @@ import 'walk_screen.dart';
 class MainShell extends StatefulWidget {
   final DogsRepository repository;
   final WalksRepository walksRepository;
+  final AuthRepository authRepository;
 
   /// テストからAICheckScreenの画像/動画選択をフェイクに差し替えるために公開している。
   final Future<Uint8List?> Function(BuildContext context)? pickImage;
@@ -26,6 +28,7 @@ class MainShell extends StatefulWidget {
     super.key,
     required this.repository,
     required this.walksRepository,
+    required this.authRepository,
     this.pickImage,
     this.pickVideo,
     this.shareImage,
@@ -93,9 +96,7 @@ class _MainShellState extends State<MainShell> {
               );
             }
             if (repo.dogs.isEmpty) {
-              return Center(
-                child: Text(l10n.noDogsRegistered, style: AppText.bodySoft),
-              );
+              return _NoDogsView(repository: repo);
             }
             return IndexedStack(
               index: _tabIndex,
@@ -103,6 +104,7 @@ class _MainShellState extends State<MainShell> {
                 HomeScreen(
                   dogs: repo.dogs,
                   repository: repo,
+                  authRepository: widget.authRepository,
                   onSelectDog: _openDogFromHome,
                 ),
                 DogsTabScreen(
@@ -165,6 +167,41 @@ class _MainShellState extends State<MainShell> {
               );
             }),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NoDogsView extends StatelessWidget {
+  final DogsRepository repository;
+
+  const _NoDogsView({required this.repository});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.noDogsRegistered, style: AppText.bodySoft),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => showAddDogSheet(context, repository),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.ink,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+              ),
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l10n.addDog, style: const TextStyle(fontSize: 13)),
+            ),
+          ],
         ),
       ),
     );

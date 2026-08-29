@@ -25,6 +25,8 @@ dependencies:
   # 犬プロフィールカードをOSの共有シート(Instagram等)経由でシェアするために使用。
   share_plus: ^13.3.0
   path_provider: ^2.1.6
+  # ログイントークンを端末に永続化するために使用。
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dogapp/data/walks_repository.dart';
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/user.dart';
 import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,7 +11,26 @@ import 'package:flutter_test/flutter_test.dart';
 /// GPS記録やHTTP呼び出しに関わるメソッドは使わない(呼ばれたら失敗させる)。
 class _UnusedApiClient implements DogappApiClient {
   @override
-  Future<List<Dog>> fetchDogs(String ownerId) => throw UnimplementedError();
+  Future<AuthResult> signup(
+          {required String email, required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<AuthResult> login(
+          {required String email, required String password}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<Dog>> fetchDogs() => throw UnimplementedError();
+
+  @override
+  Future<Dog> createDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) =>
+      throw UnimplementedError();
 
   @override
   Future<void> updateDog({
@@ -59,8 +79,7 @@ class _UnusedApiClient implements DogappApiClient {
       throw UnimplementedError();
 
   @override
-  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) =>
-      throw UnimplementedError();
+  Future<List<UpcomingItem>> fetchUpcoming() => throw UnimplementedError();
 
   @override
   Future<UpcomingItem> createUpcoming({

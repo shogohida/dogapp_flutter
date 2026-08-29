@@ -19,11 +19,124 @@ http.Response _jsonResponse(Object body, [int statusCode = 200]) {
 }
 
 void main() {
+  group('HttpDogappApiClient.signup', () {
+    test('email/passwordをPOSTし、トークンとユーザーを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/auth/signup');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['email'], 'a@example.com');
+        expect(body['password'], 'correct-password');
+        return _jsonResponse({
+          'token': 'tok-123',
+          'user': {'id': 'u1', 'email': 'a@example.com'},
+        }, 201);
+      });
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final result =
+          await client.signup(email: 'a@example.com', password: 'correct-password');
+
+      expect(result.token, 'tok-123');
+      expect(result.user.email, 'a@example.com');
+    });
+  });
+
+  group('HttpDogappApiClient.login', () {
+    test('email/passwordをPOSTし、トークンとユーザーを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/auth/login');
+        return _jsonResponse({
+          'token': 'tok-456',
+          'user': {'id': 'u1', 'email': 'a@example.com'},
+        });
+      });
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final result =
+          await client.login(email: 'a@example.com', password: 'correct-password');
+
+      expect(result.token, 'tok-456');
+    });
+
+    test('401ではApiExceptionを投げる', () async {
+      final mock = MockClient((request) async =>
+          _jsonResponse({'error': 'invalid email or password'}, 401));
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      expect(
+        () => client.login(email: 'a@example.com', password: 'wrong'),
+        throwsA(isA<ApiException>()),
+      );
+    });
+  });
+
+  test('保存済みトークンがあればAuthorizationヘッダーに付与される', () async {
+    final mock = MockClient((request) async {
+      expect(request.headers['Authorization'], 'Bearer my-token');
+      return _jsonResponse([]);
+    });
+    final client = HttpDogappApiClient(
+      httpClient: mock,
+      baseUrl: 'http://localhost:8080',
+      getToken: () => 'my-token',
+    );
+
+    await client.fetchDogs();
+  });
+
+  test('トークンが無ければAuthorizationヘッダーは付与されない', () async {
+    final mock = MockClient((request) async {
+      expect(request.headers.containsKey('Authorization'), isFalse);
+      return _jsonResponse([]);
+    });
+    final client = HttpDogappApiClient(
+        httpClient: mock, baseUrl: 'http://localhost:8080');
+
+    await client.fetchDogs();
+  });
+
+  group('HttpDogappApiClient.createDog', () {
+    test('name/breed/color/birthYearをPOSTし、作成されたDogを返す', () async {
+      final mock = MockClient((request) async {
+        expect(request.method, 'POST');
+        expect(request.url.path, '/dogs');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['name'], 'ノア');
+        return _jsonResponse({
+          'id': 'noa',
+          'name': 'ノア',
+          'breed': 'スタンダードプードル',
+          'color': 'ブラック',
+          'birthYear': 2022,
+          'weightHistory': [],
+          'records': [],
+        }, 201);
+      });
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final dog = await client.createDog(
+        name: 'ノア',
+        breed: 'スタンダードプードル',
+        color: 'ブラック',
+        birthYear: 2022,
+      );
+
+      expect(dog.id, 'noa');
+      expect(dog.name, 'ノア');
+    });
+  });
+
   group('HttpDogappApiClient.fetchDogs', () {
-    test('GET /owners/{ownerId}/dogs のレスポンスをDogのリストにパースする', () async {
+    test('GET /dogs のレスポンスをDogのリストにパースする', () async {
       final mock = MockClient((request) async {
         expect(request.method, 'GET');
-        expect(request.url.path, '/owners/owner-1/dogs');
+        expect(request.url.path, '/dogs');
         return _jsonResponse([
           {
             'id': 'leo',
@@ -48,7 +161,7 @@ void main() {
       final client = HttpDogappApiClient(
           httpClient: mock, baseUrl: 'http://localhost:8080');
 
-      final dogs = await client.fetchDogs('owner-1');
+      final dogs = await client.fetchDogs();
 
       expect(dogs, hasLength(1));
       expect(dogs.first.id, 'leo');
@@ -63,7 +176,7 @@ void main() {
       final client = HttpDogappApiClient(
           httpClient: mock, baseUrl: 'http://localhost:8080');
 
-      expect(() => client.fetchDogs('owner-1'), throwsA(isA<ApiException>()));
+      expect(() => client.fetchDogs(), throwsA(isA<ApiException>()));
     });
   });
 
@@ -284,11 +397,10 @@ void main() {
   });
 
   group('HttpDogappApiClient.fetchUpcoming', () {
-    test('GET /owners/{ownerId}/upcoming のレスポンスをUpcomingItemのリストにパースする',
-        () async {
+    test('GET /upcoming のレスポンスをUpcomingItemのリストにパースする', () async {
       final mock = MockClient((request) async {
         expect(request.method, 'GET');
-        expect(request.url.path, '/owners/owner-1/upcoming');
+        expect(request.url.path, '/upcoming');
         return _jsonResponse([
           {
             'id': '1',
@@ -302,7 +414,7 @@ void main() {
       final client = HttpDogappApiClient(
           httpClient: mock, baseUrl: 'http://localhost:8080');
 
-      final items = await client.fetchUpcoming('owner-1');
+      final items = await client.fetchUpcoming();
 
       expect(items, hasLength(1));
       expect(items.first.dogId, 'leo');

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dogapp/data/dogs_repository.dart';
 import 'package:dogapp/models/dog.dart';
+import 'package:dogapp/models/user.dart';
 import 'package:dogapp/models/walk.dart';
 import 'package:dogapp/services/dogapp_api_client.dart';
 import 'package:flutter/material.dart';
@@ -24,24 +25,50 @@ class _StubApiClient implements DogappApiClient {
     this.dogsError,
     this.createRecordResult,
     this.upcomingResult,
+    this.upcomingError,
     this.createUpcomingResult,
+    this.createDogResult,
   });
 
   final List<Dog>? dogsResult;
   final Object? dogsError;
   final HealthRecord? createRecordResult;
   final List<UpcomingItem>? upcomingResult;
+  final Object? upcomingError;
   final UpcomingItem? createUpcomingResult;
+  final Dog? createDogResult;
 
   @override
-  Future<List<Dog>> fetchDogs(String ownerId) async {
+  Future<AuthResult> signup(
+          {required String email, required String password}) async =>
+      AuthResult(token: 't', user: AppUser(id: 'u', email: email));
+
+  @override
+  Future<AuthResult> login(
+          {required String email, required String password}) async =>
+      AuthResult(token: 't', user: AppUser(id: 'u', email: email));
+
+  @override
+  Future<List<Dog>> fetchDogs() async {
     if (dogsError != null) throw dogsError!;
     return dogsResult!;
   }
 
   @override
-  Future<List<UpcomingItem>> fetchUpcoming(String ownerId) async =>
-      upcomingResult ?? [];
+  Future<Dog> createDog({
+    required String name,
+    required String breed,
+    required String color,
+    required int birthYear,
+  }) async {
+    return createDogResult!;
+  }
+
+  @override
+  Future<List<UpcomingItem>> fetchUpcoming() async {
+    if (upcomingError != null) throw upcomingError!;
+    return upcomingResult ?? [];
+  }
 
   @override
   Future<UpcomingItem> createUpcoming({
@@ -148,6 +175,18 @@ void main() {
     expect(repo.dogs.single.records, [newRecord]);
   });
 
+  test('fetchUpcomingが失敗してもdogsは読み込まれる', () async {
+    final repo = DogsRepository(
+      client: _StubApiClient(dogsResult: [_leo], upcomingError: Exception('404')),
+    );
+
+    await repo.loadDogs();
+
+    expect(repo.error, isNull);
+    expect(repo.dogs, [_leo]);
+    expect(repo.upcoming, isEmpty);
+  });
+
   test('loadDogsは今後の予定も読み込む', () async {
     final item = UpcomingItem(
         id: '1',
@@ -215,6 +254,28 @@ void main() {
     expect(updated.color, 'ホワイト');
     expect(updated.birthYear, 2020);
     expect(updated.accent, _leo.accent); // accentはローカルの値を保持する
+  });
+
+  test('addDogは末尾に犬を追加する', () async {
+    const created = Dog(
+      id: 'noa',
+      name: 'ノア',
+      breed: 'スタンダードプードル',
+      color: 'ブラック',
+      birthYear: 2022,
+      accent: Color(0xFF000000), // クライアントからの仮の色。リポジトリ側で上書きされる
+      weightHistory: [],
+      records: [],
+    );
+    final repo = DogsRepository(
+      client: _StubApiClient(dogsResult: [_leo], createDogResult: created),
+    );
+    await repo.loadDogs();
+
+    await repo.addDog(name: 'ノア', breed: 'スタンダードプードル', color: 'ブラック', birthYear: 2022);
+
+    expect(repo.dogs.map((d) => d.id), ['leo', 'noa']);
+    expect(repo.dogs.last.name, 'ノア');
   });
 
   test('notifyListenersがloadDogsの開始と終了で呼ばれる', () async {

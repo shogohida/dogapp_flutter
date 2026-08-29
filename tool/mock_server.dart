@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-final _dogs = [
+final _dogs = <Map<String, dynamic>>[
   {
     'id': 'leo',
     'name': 'レオ',
@@ -169,26 +169,80 @@ void main() async {
 
 void _addCorsHeaders(HttpResponse response) {
   response.headers.add('Access-Control-Allow-Origin', '*');
-  response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  response.headers.add('Access-Control-Allow-Headers', 'Content-Type');
+  response.headers
+      .add('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+  response.headers
+      .add('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+/// 本物のdogapp-apiと違い、JWTの中身は検証しない
+/// (Authorizationヘッダーが付いていればログイン済み扱い)。
+/// ローカルでの疎通確認用モックなので、ここでは「未ログイン状態を再現できる」
+/// ことだけを目的にしている。
+bool _authorized(HttpRequest req) {
+  final header = req.headers.value('Authorization');
+  return header != null && header.startsWith('Bearer ') && header.length > 7;
+}
+
+Future<void> _reject401(HttpRequest req) async {
+  req.response.statusCode = 401;
+  req.response.write(jsonEncode({'error': 'missing or invalid Authorization header'}));
+  await req.response.close();
 }
 
 Future<void> _handle(HttpRequest req) async {
   final segments = req.uri.pathSegments;
   req.response.headers.contentType = ContentType.json;
 
-  // GET /owners/{ownerId}/dogs
-  if (req.method == 'GET' &&
-      segments.length == 3 &&
-      segments[0] == 'owners' &&
-      segments[2] == 'dogs') {
+  // POST /auth/signup, POST /auth/login
+  if (req.method == 'POST' &&
+      segments.length == 2 &&
+      segments[0] == 'auth' &&
+      (segments[1] == 'signup' || segments[1] == 'login')) {
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final email = body['email'] as String? ?? '';
+    req.response.statusCode = segments[1] == 'signup' ? 201 : 200;
+    req.response.write(jsonEncode({
+      'token': 'mock-token-for-$email',
+      'user': {'id': 'mock-user', 'email': email},
+    }));
+    await req.response.close();
+    return;
+  }
+
+  // GET /dogs
+  if (req.method == 'GET' && segments.length == 1 && segments[0] == 'dogs') {
+    if (!_authorized(req)) return _reject401(req);
     req.response.write(jsonEncode(_dogs));
+    await req.response.close();
+    return;
+  }
+
+  // POST /dogs
+  if (req.method == 'POST' && segments.length == 1 && segments[0] == 'dogs') {
+    if (!_authorized(req)) return _reject401(req);
+    final body =
+        jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
+    final dog = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'name': body['name'],
+      'breed': body['breed'],
+      'color': body['color'],
+      'birthYear': body['birthYear'],
+      'weightHistory': [],
+      'records': [],
+    };
+    _dogs.add(dog);
+    req.response.statusCode = 201;
+    req.response.write(jsonEncode(dog));
     await req.response.close();
     return;
   }
 
   // PATCH /dogs/{dogId}
   if (req.method == 'PATCH' && segments.length == 2 && segments[0] == 'dogs') {
+    if (!_authorized(req)) return _reject401(req);
     final dogId = segments[1];
     final dog = _dogs.firstWhere((d) => d['id'] == dogId, orElse: () => {});
     if (dog.isEmpty) {
@@ -213,6 +267,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'ai-check') {
+    if (!_authorized(req)) return _reject401(req);
     await utf8.decoder.bind(req).join(); // ボディは読み捨てる(モックのため)
     await Future.delayed(const Duration(milliseconds: 800));
     final result = _aiResults[Random().nextInt(_aiResults.length)];
@@ -226,6 +281,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'gait-check') {
+    if (!_authorized(req)) return _reject401(req);
     await req.drain(); // 動画バイト列はUTF-8ではないのでdecodeせず読み捨てる
     await Future.delayed(const Duration(milliseconds: 1000));
     final result = _gaitResults[Random().nextInt(_gaitResults.length)];
@@ -239,6 +295,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'records') {
+    if (!_authorized(req)) return _reject401(req);
     final body =
         jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
     final record = {
@@ -258,6 +315,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'walks') {
+    if (!_authorized(req)) return _reject401(req);
     final dogId = segments[1];
     req.response.write(jsonEncode(_walks[dogId] ?? []));
     await req.response.close();
@@ -269,6 +327,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'walks') {
+    if (!_authorized(req)) return _reject401(req);
     final dogId = segments[1];
     final body =
         jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;
@@ -286,11 +345,11 @@ Future<void> _handle(HttpRequest req) async {
     return;
   }
 
-  // GET /owners/{ownerId}/upcoming
+  // GET /upcoming
   if (req.method == 'GET' &&
-      segments.length == 3 &&
-      segments[0] == 'owners' &&
-      segments[2] == 'upcoming') {
+      segments.length == 1 &&
+      segments[0] == 'upcoming') {
+    if (!_authorized(req)) return _reject401(req);
     final all = _upcoming.values.expand((e) => e).toList()
       ..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String));
     req.response.write(jsonEncode(all));
@@ -303,6 +362,7 @@ Future<void> _handle(HttpRequest req) async {
       segments.length == 3 &&
       segments[0] == 'dogs' &&
       segments[2] == 'upcoming') {
+    if (!_authorized(req)) return _reject401(req);
     final dogId = segments[1];
     final body =
         jsonDecode(await utf8.decoder.bind(req).join()) as Map<String, dynamic>;

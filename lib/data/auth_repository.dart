@@ -1,28 +1,29 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/user.dart';
 import '../services/auth_token_store.dart';
 import '../services/dogapp_api_client.dart';
-
-const _tokenPrefsKey = 'authToken';
+import '../services/token_storage.dart';
 
 /// signup/login/ログアウトと、端末再起動をまたいだセッション復元を管理する。
 /// トークンそのものは[AuthTokenStore]に書き込み、DogappApiClientはそちらを
 /// 読むので、ここでの状態変化がAPIクライアントに自動で反映される。
 class AuthRepository {
-  AuthRepository({required DogappApiClient client, required AuthTokenStore tokenStore})
-      : _client = client,
-        _tokenStore = tokenStore;
+  AuthRepository({
+    required DogappApiClient client,
+    required AuthTokenStore tokenStore,
+    TokenStorage? storage,
+  })  : _client = client,
+        _tokenStore = tokenStore,
+        _storage = storage ?? SecureTokenStorage();
 
   final DogappApiClient _client;
   final AuthTokenStore _tokenStore;
+  final TokenStorage _storage;
 
   AppUser? currentUser;
 
   /// 端末に保存済みのトークンがあれば読み込み、ログイン状態を復元する。
   Future<void> restoreSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(_tokenPrefsKey);
+    final token = await _storage.read();
     if (token != null) {
       _tokenStore.setToken(token);
     }
@@ -41,14 +42,12 @@ class AuthRepository {
   Future<void> logout() async {
     currentUser = null;
     _tokenStore.setToken(null);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenPrefsKey);
+    await _storage.delete();
   }
 
   Future<void> _applyResult(AuthResult result) async {
     currentUser = result.user;
     _tokenStore.setToken(result.token);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenPrefsKey, result.token);
+    await _storage.write(result.token);
   }
 }

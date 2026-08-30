@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dogapp/main.dart';
 import 'package:dogapp/screens/home_screen.dart';
 
 import 'fakes/fake_dogapp_api_client.dart';
+import 'fakes/fake_token_storage.dart';
 
 /// デフォルトのテスト画面サイズ(800x600)は横長で、この電話向けUIには
 /// 小さすぎる(ボトムナビの分だけ本文が画面外に出て、要素にタップが
@@ -22,8 +22,6 @@ Future<void> _pumpApp(
   // ログイン/ログアウト自体を検証するテストではnullを渡す。
   String? initialToken = 'test-token',
 }) async {
-  SharedPreferences.setMockInitialValues({});
-
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
@@ -44,6 +42,7 @@ Future<void> _pumpApp(
     pickImage: pickImage,
     pickVideo: pickVideo,
     shareImage: shareImage,
+    tokenStorage: FakeTokenStorage(),
     initialToken: initialToken,
   ));
   await tester.pump(); // loadDogs()/restoreSession()の完了を待つ

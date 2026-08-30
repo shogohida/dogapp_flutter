@@ -10,6 +10,7 @@ import 'screens/main_shell.dart';
 import 'services/auth_token_store.dart';
 import 'services/dogapp_api_client.dart';
 import 'services/location_service.dart';
+import 'services/token_storage.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -26,6 +27,11 @@ class DogHealthApp extends StatelessWidget {
   final Future<void> Function(Uint8List pngBytes, String dogName)? shareImage;
   final LocationService? locationService;
 
+  /// テストからフェイクのトークン永続化に差し替えるためのオーバーライド。
+  /// 実プラットフォームのセキュアストレージ(Keychain/Keystore)に依存せずに
+  /// restoreSession/login/logoutのテストができるようにしている。
+  final TokenStorage? tokenStorage;
+
   /// テストからログイン済み状態を再現するためのオーバーライド。
   /// 指定すると端末保存済みトークンの復元をスキップし、即座にこの
   /// トークンでログイン済みとして扱う。
@@ -38,6 +44,7 @@ class DogHealthApp extends StatelessWidget {
     this.pickVideo,
     this.shareImage,
     this.locationService,
+    this.tokenStorage,
     this.initialToken,
   });
 
@@ -55,6 +62,7 @@ class DogHealthApp extends StatelessWidget {
         pickVideo: pickVideo,
         shareImage: shareImage,
         locationService: locationService,
+        tokenStorage: tokenStorage,
         initialToken: initialToken,
       ),
     );
@@ -70,6 +78,7 @@ class _AppRoot extends StatefulWidget {
   final Future<XFile?> Function(BuildContext context)? pickVideo;
   final Future<void> Function(Uint8List pngBytes, String dogName)? shareImage;
   final LocationService? locationService;
+  final TokenStorage? tokenStorage;
   final String? initialToken;
 
   const _AppRoot({
@@ -78,6 +87,7 @@ class _AppRoot extends StatefulWidget {
     this.pickVideo,
     this.shareImage,
     this.locationService,
+    this.tokenStorage,
     this.initialToken,
   });
 
@@ -94,8 +104,11 @@ class _AppRootState extends State<_AppRoot> {
         // 失敗し続けないよう自動でログアウトしてログイン画面に戻す。
         onUnauthorized: () => _authRepository.logout(),
       );
-  late final AuthRepository _authRepository =
-      AuthRepository(client: _client, tokenStore: _tokenStore);
+  late final AuthRepository _authRepository = AuthRepository(
+    client: _client,
+    tokenStore: _tokenStore,
+    storage: widget.tokenStorage,
+  );
   bool _restoring = true;
 
   @override

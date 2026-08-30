@@ -7,8 +7,8 @@ class AppColors {
 
   static const ink = Color(0xFF1B2A22); // 深い森グリーン、見出し・本文
   static const inkSoft = Color(0xFF5C6B63); // 補助テキスト
-  static const paper = Color(0xFFF5EFE2); // カード・画面の背景(暖色系の紙)
-  static const paperOuter = Color(0xFFE7E2D5); // 画面外側の背景
+  static const paper = Color(0xFFFFFFFF); // カード・画面の背景(白基調)
+  static const paperOuter = Color(0xFFF7F7F5); // 画面外側の背景(ごく淡いグレーで白との境界を出す)
 
   static const marigold = Color(0xFFE2A63B); // レオ(アプリコット)のアクセント
   static const sageDark = Color(0xFF5C6B63); // ノア(ブラック)のアクセント

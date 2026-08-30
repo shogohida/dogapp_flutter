@@ -194,6 +194,10 @@ class AppLocalizationsEn extends AppLocalizations {
       '※ This is a simple AI-based check, not a diagnosis. Please see a vet for any concerning symptoms.';
 
   @override
+  String get aiCheckDataSharingNotice =>
+      'Photos and videos you capture or select are sent to an external AI service (Anthropic\'s Claude) for analysis. The photo/video itself is not stored on our servers.';
+
+  @override
   String healthCheckRecordLabel(String title) {
     return 'Health check: $title';
   }

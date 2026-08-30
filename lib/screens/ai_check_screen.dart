@@ -203,6 +203,18 @@ class _AICheckScreenState extends State<AICheckScreen> {
               : l10n.gaitCheckDescription,
           style: AppText.bodySoft,
         ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline, size: 14, color: AppColors.inkSoft),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(l10n.aiCheckDataSharingNotice,
+                  style: AppText.caption),
+            ),
+          ],
+        ),
         const SizedBox(height: 14),
         Row(
           children: [

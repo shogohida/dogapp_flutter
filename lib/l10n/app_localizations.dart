@@ -440,6 +440,12 @@ abstract class AppLocalizations {
   /// **'※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。'**
   String get aiCheckDisclaimer;
 
+  /// No description provided for @aiCheckDataSharingNotice.
+  ///
+  /// In ja, this message translates to:
+  /// **'撮影・選択した写真や動画は、解析のため外部のAIサービス(Anthropic Claude)に送信されます。写真・動画自体は当アプリのサーバーには保存されません。'**
+  String get aiCheckDataSharingNotice;
+
   /// No description provided for @healthCheckRecordLabel.
   ///
   /// In ja, this message translates to:

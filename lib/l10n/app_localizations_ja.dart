@@ -194,6 +194,10 @@ class AppLocalizationsJa extends AppLocalizations {
       '※ これはAIによる簡易チェックです。診断ではないため、心配な症状は動物病院を受診してください。';
 
   @override
+  String get aiCheckDataSharingNotice =>
+      '撮影・選択した写真や動画は、解析のため外部のAIサービス(Anthropic Claude)に送信されます。写真・動画自体は当アプリのサーバーには保存されません。';
+
+  @override
   String healthCheckRecordLabel(String title) {
     return '健康チェック: $title';
   }

@@ -101,10 +101,12 @@ class HttpDogappApiClient implements DogappApiClient {
     String? baseUrl,
     Duration? timeout,
     String? Function()? getToken,
+    void Function()? onUnauthorized,
   })  : _client = httpClient ?? http.Client(),
         _baseUrl = baseUrl ?? ApiConfig.baseUrl,
         _timeout = timeout ?? const Duration(seconds: 10),
-        _getToken = getToken;
+        _getToken = getToken,
+        _onUnauthorized = onUnauthorized;
 
   final http.Client _client;
   final String _baseUrl;
@@ -113,6 +115,10 @@ class HttpDogappApiClient implements DogappApiClient {
   /// ログイン/ログアウトの度にAPIクライアントを作り直さずに済むよう、
   /// トークンは固定値ではなく都度読み直すコールバックとして受け取る。
   final String? Function()? _getToken;
+
+  /// サーバーがトークンを拒否した(401)ときに呼ばれる。呼び出し側でログアウト
+  /// させ、無効なトークンを持ったまま失敗し続ける状態を避けるために使う。
+  final void Function()? _onUnauthorized;
 
   Map<String, String> _headers() {
     final token = _getToken?.call();
@@ -380,6 +386,12 @@ class HttpDogappApiClient implements DogappApiClient {
   }
 
   void _checkStatus(http.Response res) {
+    // login/signupは未ログイン(トークンなし)の状態で叩かれるため、
+    // パスワード間違いなどの401とセッション切れの401を区別できるよう、
+    // 実際にトークンを送っていた場合のみログアウト扱いにする。
+    if (res.statusCode == 401 && _getToken?.call() != null) {
+      _onUnauthorized?.call();
+    }
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException('dogapp-api error (${res.statusCode}): ${res.body}');
     }

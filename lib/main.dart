@@ -88,7 +88,12 @@ class _AppRoot extends StatefulWidget {
 class _AppRootState extends State<_AppRoot> {
   late final AuthTokenStore _tokenStore = AuthTokenStore();
   late final DogappApiClient _client = widget.apiClient ??
-      HttpDogappApiClient(getToken: () => _tokenStore.token);
+      HttpDogappApiClient(
+        getToken: () => _tokenStore.token,
+        // トークンをサーバーに拒否された(401)ら、無効なトークンのまま
+        // 失敗し続けないよう自動でログアウトしてログイン画面に戻す。
+        onUnauthorized: () => _authRepository.logout(),
+      );
   late final AuthRepository _authRepository =
       AuthRepository(client: _client, tokenStore: _tokenStore);
   bool _restoring = true;

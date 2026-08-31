@@ -51,8 +51,11 @@ class _UnusedApiClient implements DogappApiClient {
       throw UnimplementedError();
 
   @override
-  Future<AICheckResult> runAiCheck(
-          {required String dogId, required Uint8List imageBytes}) =>
+  Future<AICheckResult> runAiCheck({
+    required String dogId,
+    required Uint8List imageBytes,
+    required String bodyPart,
+  }) =>
       throw UnimplementedError();
 
   @override

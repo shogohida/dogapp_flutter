@@ -49,9 +49,12 @@ abstract class DogappApiClient {
     required double kg,
   });
 
+  /// [bodyPart]は"skin"/"eye"/"ear"/"mouth"のいずれか(dogapp-apiの
+  /// claude.ValidBodyPartに対応)。
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
+    required String bodyPart,
   });
 
   /// 短い動画から歩き方の異常(引きずり・跛行など)を簡易チェックする。
@@ -247,13 +250,17 @@ class HttpDogappApiClient implements DogappApiClient {
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
+    required String bodyPart,
   }) async {
     final uri = Uri.parse('$_baseUrl/dogs/$dogId/ai-check');
     final res = await _client
         .post(
           uri,
           headers: _headers(),
-          body: jsonEncode({'imageBase64': base64Encode(imageBytes)}),
+          body: jsonEncode({
+            'imageBase64': base64Encode(imageBytes),
+            'bodyPart': bodyPart,
+          }),
         )
         // 画像解析はClaude API呼び出しを挟むぶん時間がかかりうるため、
         // 他のエンドポイントより長めのタイムアウトにする。

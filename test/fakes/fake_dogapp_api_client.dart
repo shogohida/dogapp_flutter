@@ -68,6 +68,7 @@ class FakeDogappApiClient implements DogappApiClient {
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
+    required String bodyPart,
   }) async {
     // 実ネットワークと同じくタイマー経由の遅延を挟むことで、呼び出し側の
     // 「analyzing」中間状態がテストのpump()で正しく観測できるようにする。

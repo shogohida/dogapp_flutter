@@ -257,6 +257,7 @@ void main() {
         expect(request.url.path, '/dogs/leo/ai-check');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['imageBase64'], base64Encode([1, 2, 3]));
+        expect(body['bodyPart'], 'eye');
         return _jsonResponse(
             {'level': 'watch', 'title': '軽度の乾燥', 'detail': '様子を見てください'});
       });
@@ -266,6 +267,7 @@ void main() {
       final result = await client.runAiCheck(
         dogId: 'leo',
         imageBytes: Uint8List.fromList([1, 2, 3]),
+        bodyPart: 'eye',
       );
 
       expect(result.level, AICheckLevel.watch);

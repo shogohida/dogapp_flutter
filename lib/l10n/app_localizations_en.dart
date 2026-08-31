@@ -166,6 +166,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Take a photo of the skin or coat for a quick check on any changes. This isn\'t a diagnosis — just a guide for whether to see a vet.';
 
   @override
+  String get healthCheckDescriptionEye =>
+      'Take a photo of the eyes for a quick check on any changes. This isn\'t a diagnosis — just a guide for whether to see a vet.';
+
+  @override
+  String get healthCheckDescriptionEar =>
+      'Take a photo of the ears for a quick check on any changes. This isn\'t a diagnosis — just a guide for whether to see a vet.';
+
+  @override
+  String get healthCheckDescriptionMouth =>
+      'Take a photo of the mouth for a quick check on any changes. This isn\'t a diagnosis — just a guide for whether to see a vet.';
+
+  @override
+  String get healthCheckBodyPartSkin => 'Skin & coat';
+
+  @override
+  String get healthCheckBodyPartEye => 'Eyes';
+
+  @override
+  String get healthCheckBodyPartEar => 'Ears';
+
+  @override
+  String get healthCheckBodyPartMouth => 'Mouth';
+
+  @override
   String get takeOrChoosePhoto => 'Take or choose a photo';
 
   @override

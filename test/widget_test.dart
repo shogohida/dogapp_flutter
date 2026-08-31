@@ -189,7 +189,7 @@ void main() {
     // 判定結果は犬の記録としても自動保存される。
     await tester.tap(find.text('記録').last);
     await tester.pumpAndSettle();
-    expect(find.text('健康チェック: 特に気になる所見はありません'), findsOneWidget);
+    expect(find.text('健康チェック: 皮膚・被毛 - 特に気になる所見はありません'), findsOneWidget);
   });
 
   testWidgets('健康チェックタブで動画モードに切り替えて撮影すると解析中→結果の順に遷移する', (tester) async {

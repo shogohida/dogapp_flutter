@@ -101,8 +101,11 @@ class _StubApiClient implements DogappApiClient {
   }
 
   @override
-  Future<AICheckResult> runAiCheck(
-      {required String dogId, required Uint8List imageBytes}) async {
+  Future<AICheckResult> runAiCheck({
+    required String dogId,
+    required Uint8List imageBytes,
+    required String bodyPart,
+  }) async {
     return const AICheckResult(
         level: AICheckLevel.normal, title: 't', detail: 'd');
   }

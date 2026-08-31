@@ -109,8 +109,10 @@ class DogsRepository extends ChangeNotifier {
   Future<AICheckResult> runAiCheck({
     required String dogId,
     required Uint8List imageBytes,
+    required String bodyPart,
   }) {
-    return _client.runAiCheck(dogId: dogId, imageBytes: imageBytes);
+    return _client.runAiCheck(
+        dogId: dogId, imageBytes: imageBytes, bodyPart: bodyPart);
   }
 
   Future<AICheckResult> runGaitCheck({

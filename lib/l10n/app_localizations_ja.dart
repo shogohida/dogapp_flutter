@@ -166,6 +166,30 @@ class AppLocalizationsJa extends AppLocalizations {
       '皮膚・被毛の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。';
 
   @override
+  String get healthCheckDescriptionEye =>
+      '目の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。';
+
+  @override
+  String get healthCheckDescriptionEar =>
+      '耳の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。';
+
+  @override
+  String get healthCheckDescriptionMouth =>
+      '口の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。';
+
+  @override
+  String get healthCheckBodyPartSkin => '皮膚・被毛';
+
+  @override
+  String get healthCheckBodyPartEye => '目';
+
+  @override
+  String get healthCheckBodyPartEar => '耳';
+
+  @override
+  String get healthCheckBodyPartMouth => '口';
+
+  @override
   String get takeOrChoosePhoto => '写真を撮る・選ぶ';
 
   @override

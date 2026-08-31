@@ -386,6 +386,48 @@ abstract class AppLocalizations {
   /// **'皮膚・被毛の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。'**
   String get healthCheckDescription;
 
+  /// No description provided for @healthCheckDescriptionEye.
+  ///
+  /// In ja, this message translates to:
+  /// **'目の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。'**
+  String get healthCheckDescriptionEye;
+
+  /// No description provided for @healthCheckDescriptionEar.
+  ///
+  /// In ja, this message translates to:
+  /// **'耳の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。'**
+  String get healthCheckDescriptionEar;
+
+  /// No description provided for @healthCheckDescriptionMouth.
+  ///
+  /// In ja, this message translates to:
+  /// **'口の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。'**
+  String get healthCheckDescriptionMouth;
+
+  /// No description provided for @healthCheckBodyPartSkin.
+  ///
+  /// In ja, this message translates to:
+  /// **'皮膚・被毛'**
+  String get healthCheckBodyPartSkin;
+
+  /// No description provided for @healthCheckBodyPartEye.
+  ///
+  /// In ja, this message translates to:
+  /// **'目'**
+  String get healthCheckBodyPartEye;
+
+  /// No description provided for @healthCheckBodyPartEar.
+  ///
+  /// In ja, this message translates to:
+  /// **'耳'**
+  String get healthCheckBodyPartEar;
+
+  /// No description provided for @healthCheckBodyPartMouth.
+  ///
+  /// In ja, this message translates to:
+  /// **'口'**
+  String get healthCheckBodyPartMouth;
+
   /// No description provided for @takeOrChoosePhoto.
   ///
   /// In ja, this message translates to:

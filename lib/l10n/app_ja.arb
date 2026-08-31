@@ -80,6 +80,13 @@
 
   "healthCheckTitle": "健康チェック",
   "healthCheckDescription": "皮膚・被毛の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "healthCheckDescriptionEye": "目の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "healthCheckDescriptionEar": "耳の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "healthCheckDescriptionMouth": "口の写真を撮ると、気になる変化がないかを簡易チェックします。診断ではなく、動物病院に相談すべきかどうかの目安です。",
+  "healthCheckBodyPartSkin": "皮膚・被毛",
+  "healthCheckBodyPartEye": "目",
+  "healthCheckBodyPartEar": "耳",
+  "healthCheckBodyPartMouth": "口",
   "takeOrChoosePhoto": "写真を撮る・選ぶ",
   "tapToUpload": "タップしてアップロード",
   "takePhoto": "カメラで撮影",

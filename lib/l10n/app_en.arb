@@ -55,6 +55,13 @@
 
   "healthCheckTitle": "Health Check",
   "healthCheckDescription": "Take a photo of the skin or coat for a quick check on any changes. This isn't a diagnosis — just a guide for whether to see a vet.",
+  "healthCheckDescriptionEye": "Take a photo of the eyes for a quick check on any changes. This isn't a diagnosis — just a guide for whether to see a vet.",
+  "healthCheckDescriptionEar": "Take a photo of the ears for a quick check on any changes. This isn't a diagnosis — just a guide for whether to see a vet.",
+  "healthCheckDescriptionMouth": "Take a photo of the mouth for a quick check on any changes. This isn't a diagnosis — just a guide for whether to see a vet.",
+  "healthCheckBodyPartSkin": "Skin & coat",
+  "healthCheckBodyPartEye": "Eyes",
+  "healthCheckBodyPartEar": "Ears",
+  "healthCheckBodyPartMouth": "Mouth",
   "takeOrChoosePhoto": "Take or choose a photo",
   "tapToUpload": "Tap to upload",
   "takePhoto": "Take a photo",

@@ -11,6 +11,51 @@ enum _CheckStep { idle, analyzing, result, error }
 
 enum _CheckMedia { photo, video }
 
+/// 写真チェックの対象部位。写真モードでのみ使う(動画は歩様チェック固定)。
+enum _BodyPart { skin, eye, ear, mouth }
+
+extension on _BodyPart {
+  /// dogapp-apiへ送るwire値(claude.ValidBodyPartが受け付ける値と一致させる)。
+  String get wireValue {
+    switch (this) {
+      case _BodyPart.skin:
+        return 'skin';
+      case _BodyPart.eye:
+        return 'eye';
+      case _BodyPart.ear:
+        return 'ear';
+      case _BodyPart.mouth:
+        return 'mouth';
+    }
+  }
+
+  String label(AppLocalizations l10n) {
+    switch (this) {
+      case _BodyPart.skin:
+        return l10n.healthCheckBodyPartSkin;
+      case _BodyPart.eye:
+        return l10n.healthCheckBodyPartEye;
+      case _BodyPart.ear:
+        return l10n.healthCheckBodyPartEar;
+      case _BodyPart.mouth:
+        return l10n.healthCheckBodyPartMouth;
+    }
+  }
+
+  String description(AppLocalizations l10n) {
+    switch (this) {
+      case _BodyPart.skin:
+        return l10n.healthCheckDescription;
+      case _BodyPart.eye:
+        return l10n.healthCheckDescriptionEye;
+      case _BodyPart.ear:
+        return l10n.healthCheckDescriptionEar;
+      case _BodyPart.mouth:
+        return l10n.healthCheckDescriptionMouth;
+    }
+  }
+}
+
 /// 画像選択の実処理。「撮る・選ぶ」の両方に対応するため、まずカメラ/ギャラリーを
 /// 選ばせてからImagePickerを呼ぶ。テストではネイティブのプラットフォームチャンネルが
 /// 使えないため、[AICheckScreen.pickImage]としてフェイクに差し替えられるようにしている。
@@ -107,6 +152,7 @@ class AICheckScreen extends StatefulWidget {
 class _AICheckScreenState extends State<AICheckScreen> {
   _CheckStep _step = _CheckStep.idle;
   _CheckMedia _media = _CheckMedia.photo;
+  _BodyPart _bodyPart = _BodyPart.skin;
   AICheckResult? _result;
   String? _errorMessage;
   late String _selectedDogId = widget.dogs.first.id;
@@ -114,6 +160,15 @@ class _AICheckScreenState extends State<AICheckScreen> {
   void _selectMedia(_CheckMedia media) {
     setState(() {
       _media = media;
+      _step = _CheckStep.idle;
+      _result = null;
+      _errorMessage = null;
+    });
+  }
+
+  void _selectBodyPart(_BodyPart bodyPart) {
+    setState(() {
+      _bodyPart = bodyPart;
       _step = _CheckStep.idle;
       _result = null;
       _errorMessage = null;
@@ -137,8 +192,11 @@ class _AICheckScreenState extends State<AICheckScreen> {
     setState(() => _step = _CheckStep.analyzing);
     try {
       final result = _media == _CheckMedia.photo
-          ? await widget.repository
-              .runAiCheck(dogId: _selectedDogId, imageBytes: photoBytes!)
+          ? await widget.repository.runAiCheck(
+              dogId: _selectedDogId,
+              imageBytes: photoBytes!,
+              bodyPart: _bodyPart.wireValue,
+            )
           : await widget.repository.runGaitCheck(
               dogId: _selectedDogId,
               videoBytes: await video!.readAsBytes(),
@@ -164,7 +222,8 @@ class _AICheckScreenState extends State<AICheckScreen> {
   Future<void> _saveAsRecord(AICheckResult result) async {
     final l10n = AppLocalizations.of(context)!;
     final label = _media == _CheckMedia.photo
-        ? l10n.healthCheckRecordLabel(result.title)
+        ? l10n.healthCheckRecordLabel(
+            '${_bodyPart.label(l10n)} - ${result.title}')
         : l10n.gaitCheckRecordLabel(result.title);
     try {
       await widget.repository.addRecord(
@@ -199,7 +258,7 @@ class _AICheckScreenState extends State<AICheckScreen> {
         const SizedBox(height: 6),
         Text(
           _media == _CheckMedia.photo
-              ? l10n.healthCheckDescription
+              ? _bodyPart.description(l10n)
               : l10n.gaitCheckDescription,
           style: AppText.bodySoft,
         ),
@@ -240,6 +299,33 @@ class _AICheckScreenState extends State<AICheckScreen> {
           ],
         ),
         const SizedBox(height: 14),
+        if (_media == _CheckMedia.photo) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _BodyPart.values.map((part) {
+              final selected = part == _bodyPart;
+              return OutlinedButton(
+                onPressed: canInteract ? () => _selectBodyPart(part) : null,
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: selected
+                      ? AppColors.ink.withValues(alpha: 0.06)
+                      : Colors.white,
+                  side: BorderSide(
+                    color: selected
+                        ? AppColors.ink
+                        : AppColors.ink.withValues(alpha: 0.12),
+                  ),
+                  shape: const StadiumBorder(),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                child: Text(part.label(l10n), style: AppText.body),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 14),
+        ],
         Row(
           children: widget.dogs.map((dog) {
             final selected = dog.id == _selectedDogId;

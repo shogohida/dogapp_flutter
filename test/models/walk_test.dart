@@ -32,4 +32,21 @@ void main() {
     expect(restored.distanceMeters, walk.distanceMeters);
     expect(restored.points.single.lat, 35.0);
   });
+
+  test('durationSecondsがintではなくfloatで返ってきてもパースできる', () {
+    // dogapp-apiがdurationSecondsをJSONの浮動小数点数(例: 600.0)として
+    // 返した場合、`as int`の強制キャストだと落ちる回帰テスト。
+    final json = {
+      'id': 'w1',
+      'dogId': 'leo',
+      'startedAt': '2026-08-27T10:00:00Z',
+      'durationSeconds': 600.0,
+      'distanceMeters': 1500.5,
+      'points': <Map<String, dynamic>>[],
+    };
+
+    final walk = WalkRoute.fromJson(json);
+
+    expect(walk.duration, const Duration(seconds: 600));
+  });
 }

@@ -28,9 +28,12 @@ class LocationService {
   }
 
   Stream<Position> positionStream() {
+    // distanceFilterは「前回の点からこの距離以上動かないと次のGPS点を
+    // 発行しない」設定。stopRecording()はGPS点が2点未満だと保存しない
+    // ため、値を大きくするほど記録に必要な最低歩行距離が伸びてしまう。
     return Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high, distanceFilter: 5),
+          accuracy: LocationAccuracy.high, distanceFilter: 2),
     );
   }
 }

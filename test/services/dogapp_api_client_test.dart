@@ -380,6 +380,25 @@ void main() {
       expect(walks.first.duration, const Duration(seconds: 1200));
       expect(walks.first.points.single.lat, 35.0);
     });
+
+    test('durationSecondsが小数(float)で返ってきても例外を投げずにパースする', () async {
+      final mock = MockClient((request) async => _jsonResponse([
+            {
+              'id': 'w1',
+              'dogId': 'leo',
+              'startedAt': '2026-08-27T10:00:00Z',
+              'durationSeconds': 1200.0,
+              'distanceMeters': 1500.5,
+              'points': [],
+            },
+          ]));
+      final client = HttpDogappApiClient(
+          httpClient: mock, baseUrl: 'http://localhost:8080');
+
+      final walks = await client.fetchWalks('leo');
+
+      expect(walks.first.duration, const Duration(seconds: 1200));
+    });
   });
 
   group('HttpDogappApiClient.createWalk', () {

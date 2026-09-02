@@ -40,7 +40,8 @@ class WalkRoute {
         id: json['id'] as String,
         dogId: json['dogId'] as String,
         startedAt: DateTime.parse(json['startedAt'] as String),
-        duration: Duration(seconds: json['durationSeconds'] as int),
+        duration: Duration(
+            seconds: (json['durationSeconds'] as num).toInt()),
         distanceMeters: (json['distanceMeters'] as num).toDouble(),
         points: (json['points'] as List<dynamic>? ?? [])
             .map((e) => GeoPoint.fromJson(e as Map<String, dynamic>))
